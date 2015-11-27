@@ -1,4 +1,7 @@
 =begin
+    
+    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
     REM is free software: you can redistribute it and/or modify
@@ -240,21 +243,4 @@ class Package < SoftwarePackage
             self.do_compile_clean()
             self.do_link_clean()
         end
-end
-
-class SWPackage
-    attr_accessor :name
-    attr_accessor :type
-    attr_accessor :srcs
-    attr_accessor :incdirs
-    attr_accessor :patches
-    attr_accessor :deps
-    attr_accessor :defs
-    attr_accessor :uri
-    attr_accessor :arch
-    attr_accessor :mach
-    attr_accessor :global_defines
-    attr_accessor :global_linker_flags
-
-    attr_accessor :custom_tasks
 end

@@ -1,4 +1,7 @@
 =begin
+    
+    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
     REM is free software: you can redistribute it and/or modify
@@ -16,6 +19,16 @@
 =end
 
 require 'open3'
+
+def find_files_with_ending(folders, ending)
+    files = []
+    folders.each do |e|
+        Find.find("#{e}") do |path|
+            files << path if path =~ /.*\.#{ending}$/
+        end
+    end
+    return files
+end
 
 def check_duplicates(array)
     return array.select{|element| array.count(element) > 1 }

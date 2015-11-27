@@ -1,4 +1,7 @@
 =begin
+    
+    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
     REM is free software: you can redistribute it and/or modify
@@ -73,12 +76,7 @@ namespace :package do
     def get_recipes
         project_folders = "#{global_config.get_project_folder()}".split(" ")
         files = []
-
-        project_folders.each do |e|
-            Find.find("#{e}") do |path|
-                files << path if path =~ /.*\.rk$/
-            end
-        end
+        files = find_files_with_ending(project_folders, "rk")
 
         if files.empty?
             abort ("No recipes found!")
@@ -207,10 +205,21 @@ namespace :package do
             # Add own package to the compile dep list
             dep_compile_list.push("#{get_package_state_file("#{pkg.name}","prepare")}")
 
-            # Also add source file dependencies
-            pkg.src_array.each do |e|
-                if pkg.uri == "package.local"
+            # Also add source file dependencies and include folders
+            if pkg.uri == "package.local"
+                pkg.src_array.each do |e|
                     dep_prepare_list.push("#{pkg.base_dir}/#{e}")
+                end
+
+                # At first find all *.h files:
+                header_files = []
+                pkg.inc_dir_array.each do |e|
+                    header_files = find_files_with_ending("#{pkg.base_dir}/#{e}".split(" "), "h")                    
+                end
+
+                # Now add it to the dependendy list
+                header_files.each do |e|
+                    dep_prepare_list.push("#{e}")
                 end
             end
 

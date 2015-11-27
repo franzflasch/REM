@@ -1,4 +1,7 @@
 =begin
+    
+    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
     REM is free software: you can redistribute it and/or modify

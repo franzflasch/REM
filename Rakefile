@@ -76,7 +76,7 @@ namespace :package do
     def get_recipes
         project_folders = "#{global_config.get_project_folder()}".split(" ")
         files = []
-        files = find_files_with_ending(project_folders, "rk")
+        files = find_files_with_ending(project_folders, "rem")
 
         if files.empty?
             abort ("No recipes found!")

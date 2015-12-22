@@ -12,5 +12,9 @@ The arguments "-m -j4" mean to build with max 4 threads simultaneously.
 rake ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin]
 ```
 
+## You can also add verbose output:
+```Shell
+rake ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin] VERBOSE=1
+
 ## Example of how to load the hex file into an atmega168 microcontroller.
 avrdude -F -cstk500v2 -P/dev/ttyUSB0 -patmega168p -Uflash:w:workdir/avr_atmega168/deploy/test_project/test_project.hex

@@ -15,6 +15,19 @@ rake ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:
 ## You can also add verbose output:
 ```Shell
 rake ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin] VERBOSE=1
+```
 
 ## Example of how to load the hex file into an atmega168 microcontroller.
+```Shell
 avrdude -F -cstk500v2 -P/dev/ttyUSB0 -patmega168p -Uflash:w:workdir/avr_atmega168/deploy/test_project/test_project.hex
+```
+
+## List all available packages for this architecture:
+```Shell
+rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
+```
+
+## Get a list of dependencies for a particular package:
+```Shell
+rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
+```

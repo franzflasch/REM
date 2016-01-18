@@ -1,6 +1,6 @@
 =begin
     
-    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+    Copyright (C) 2016 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
@@ -37,9 +37,6 @@ def create_OMM_workdir
 end
 
 def parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, recipe_file)
-    src_array = []
-    pkg_deps_array = []
-
     sw_package_set(SoftwarePackage.new(pkg_name, pkg_basedir))
     load "./#{recipe_file}"
 
@@ -58,6 +55,10 @@ def parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, recipe_file)
 end
 
 namespace :package do
+    # At first set the main rakefile base directory
+    global_config.set_main_working_dir(File.dirname(__FILE__))
+
+
     mk_files = []
     package_list = []
 
@@ -156,6 +157,7 @@ namespace :package do
     
     # All variables which have to be used accross packages must be global for all packages, otherwise
     # we might miss something when linking
+    dependency_pkgs_to_build = ""
     dependency_chain = []
     dependency_incs = []
     dependency_objs = []
@@ -181,6 +183,7 @@ namespace :package do
             # Prepare dependencies
             # These variables are used in a local context, and are used for preparing and compiling, here it is not necessary to have all
             # data from every package available
+            dep_depends_chain_list = []
             dep_depends_compile_list = []
             dep_depends_link_list = []
             dep_prepare_list = []
@@ -188,6 +191,7 @@ namespace :package do
             dep_link_list = []
             
             pkg.deps_array.each do |dep|
+                dep_depends_chain_list.push("package:"+dep.to_s + ":depends_chain_get")
 
                 # Especially for the non-file tasks:
                 dep_depends_compile_list.push("package:"+dep.to_s + ":depends_compile")
@@ -246,6 +250,31 @@ namespace :package do
                 end
             end
 
+            task :depends_chain_get => dep_depends_chain_list do |t, args|
+                tmp_string = ""
+                dependency_pkgs_to_build << "#{pkg.name} "
+
+                pkg.deps_array.each do |e|
+                    tmp_string << "#{e} "
+                end                
+                if !pkg.deps_array.empty?
+                    tmp_string << "<-- #{pkg.name} "
+                    dependency_chain.push("#{tmp_string}");
+                end
+            end
+
+            desc "Print dependency chain task #{pkg.name}"
+            task :depends_chain_print => "package:#{pkg.name}:depends_chain_get" do |t, args|
+                print_any ("")
+                print_any ("The package has the following dependencies: ")
+                dependency_chain.each do |e|
+                    print_any("#{e}")
+                end
+                print_any ("")
+                print_any ("The following packages need to be built: ")
+                print_any ("#{dependency_pkgs_to_build}")
+            end
+
             desc "Depends compile task #{pkg.name}"
             task :depends_compile => dep_depends_compile_list do |t, args|
                 pkg.compile_prepare()
@@ -298,6 +327,15 @@ namespace :package do
                 print_any "Making image #{pkg.name}..."
                 pkg.make_image("#{args[:what]}")
             end
+        end
+    end
+
+    desc "List available packages"
+    task :list_packages do |t, args|
+        print_any ""
+        print_any "Following software packages are available for this architecture: "
+        package_list.each do |pkg|
+            print_any "#{pkg.name}"
         end
     end
 end

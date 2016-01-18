@@ -23,6 +23,8 @@ require_relative "./config/config"
 
 
 class GlobalConfig
+    attr_accessor :main_working_dir
+
     attr_accessor :arch
     attr_accessor :mach
 
@@ -46,6 +48,8 @@ class GlobalConfig
     attr_reader :cc_prefix
 
     def initialize()
+        @main_working_dir = ""
+
         @arch = ARCH 
         @mach = MACH
 
@@ -67,6 +71,13 @@ class GlobalConfig
         @compiler_obj_extension = "o"
 
         @cc_prefix = ""
+    end
+
+    # The getter methods should be considered as 'public' and 
+    # can be called from anywhere:
+
+    def get_main_working_dir
+        return self.main_working_dir
     end
 
     def get_arch
@@ -101,20 +112,8 @@ class GlobalConfig
         return self.download_state_dir
     end
 
-    def set_compiler_prefix(prefix)
-        self.prefix = prefix
-    end
-
     def get_compiler_prefix()
         return self.prefix
-    end
-
-    def set_compiler(compiler)
-        self.compiler = compiler
-    end
-
-    def set_obj_cp(obj_cp)
-        self.obj_cp = obj_cp
     end
 
     def get_compiler
@@ -133,20 +132,12 @@ class GlobalConfig
         end
     end
 
-    def set_define(define)
-        self.defines.push(define)
-    end
-
     def get_defines
         defines_string = ""
         self.defines.each do |e|
             defines_string << "-D#{e} "
         end
         return defines_string
-    end
-
-    def set_compile_flag(flags)
-        self.compile_flags.push(flags)
     end
 
     def get_compile_flags
@@ -158,10 +149,6 @@ class GlobalConfig
         return compile_flags_combined
     end
 
-    def set_link_flag(flags)
-        self.link_flags.push(flags)
-    end
-
     def get_link_flags
         link_flags_combined = ""
         self.link_flags.each do |e|
@@ -171,12 +158,44 @@ class GlobalConfig
         return link_flags_combined
     end
 
-    def set_obj_extension(extension)
-        self.compiler_obj_extension = "#{extension}"
-    end
-
     def get_obj_extension
         return self.compiler_obj_extension
+    end
+
+
+
+    # These are the setter methods. They should be considered as 'private'
+    # and should only be called from dedicated configure files.
+    def set_main_working_dir(dir)
+        self.main_working_dir = dir
+    end
+
+    def set_compiler_prefix(prefix)
+        self.prefix = prefix
+    end
+
+    def set_compiler(compiler)
+        self.compiler = compiler
+    end
+
+    def set_obj_cp(obj_cp)
+        self.obj_cp = obj_cp
+    end
+
+    def set_define(define)
+        self.defines.push(define)
+    end
+
+    def set_compile_flag(flags)
+        self.compile_flags.push(flags)
+    end
+
+    def set_link_flag(flags)
+        self.link_flags.push(flags)
+    end
+
+    def set_obj_extension(extension)
+        self.compiler_obj_extension = "#{extension}"
     end
 end
 

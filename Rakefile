@@ -56,7 +56,7 @@ end
 
 namespace :package do
     # At first set the main rakefile base directory
-    global_config.set_main_working_dir(File.dirname(__FILE__))
+    global_config.set_main_working_dir(Rake.original_dir)
 
 
     mk_files = []

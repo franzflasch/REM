@@ -18,14 +18,14 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-require "./scripts/global_config"
-require "./machine_conf/#{global_config.get_arch}/#{global_config.get_mach}"
-require "./scripts/package_download"
-require "./scripts/package_prepare"
-require "./scripts/package_patch"
-require "./scripts/package"
-require "./scripts/#{global_config.compiler}_tasks/DefaultTasks"
-require "./scripts/helper"
+require_relative "scripts/global_config"
+require_relative "machine_conf/#{global_config.get_arch}/#{global_config.get_mach}"
+require_relative "scripts/package_download"
+require_relative "scripts/package_prepare"
+require_relative "scripts/package_patch"
+require_relative "scripts/package"
+require_relative "scripts/#{global_config.compiler}_tasks/DefaultTasks"
+require_relative "scripts/helper"
 
 require "find"
 require "fileutils"

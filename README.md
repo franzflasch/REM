@@ -31,3 +31,10 @@ rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
 ```Shell
 rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
 ```
+
+## There is also a shell based wrapper script to start the build: 
+The script basically calls rake -f "path/to/main/Rakefile" and allows to start the build outside of the REM base directory,
+if added to the PATH variable:
+```Shell
+rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
+```

@@ -18,10 +18,11 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-BASE_DIR = "workdir/#{ARCH}_#{MACH}"
+WORKDIR = "rem_workdir"
+BASE_DIR = "#{WORKDIR}/#{ARCH}_#{MACH}"
 BUILD_DIR = "#{BASE_DIR}/build"
 DEPLOY_DIR = "#{BASE_DIR}/deploy"
 STATE_DIR = "#{BASE_DIR}/state"
 
-DL_DIR = "workdir/download/packages"
-DL_STATE_DIR = "workdir/download/state"
+DL_DIR = "#{WORKDIR}/download/packages"
+DL_STATE_DIR = "#{WORKDIR}/download/state"

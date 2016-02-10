@@ -21,7 +21,7 @@
 module Default
     module Compile
 
-        public
+        private
 
             def do_compile_clean
                 FileUtils.rm_rf("#{pkg_state_dir}/compile")
@@ -56,7 +56,7 @@ module Default
 
     module Link
 
-        public
+        private
 
             def do_link_clean
                 FileUtils.rm_rf("#{pkg_state_dir}/link")
@@ -77,14 +77,14 @@ module Default
 
     module Image
 
-        public
+        private
 
-        def do_make_bin
-            execute "#{global_config.get_obj_cp} -O binary -S #{self.pkg_deploy_dir}/#{self.name}.elf #{self.pkg_deploy_dir}/#{self.name}.bin"
-        end
+            def do_make_bin
+                execute "#{global_config.get_obj_cp} -O binary -S #{self.pkg_deploy_dir}/#{self.name}.elf #{self.pkg_deploy_dir}/#{self.name}.bin"
+            end
 
-        def do_make_hex
-            execute "#{global_config.get_obj_cp} -R .eeprom -R .fuse -R .lock -R .signature -O ihex #{self.pkg_deploy_dir}/#{self.name}.elf #{self.pkg_deploy_dir}/#{self.name}.hex"
-        end
+            def do_make_hex
+                execute "#{global_config.get_obj_cp} -R .eeprom -R .fuse -R .lock -R .signature -O ihex #{self.pkg_deploy_dir}/#{self.name}.elf #{self.pkg_deploy_dir}/#{self.name}.hex"
+            end
     end
 end

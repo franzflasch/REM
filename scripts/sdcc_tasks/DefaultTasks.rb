@@ -21,7 +21,7 @@
 module Default
     module Compile
 
-        public
+        private
 
             def do_compile_clean
                 FileUtils.rm_rf("#{pkg_state_dir}/compile")
@@ -56,7 +56,7 @@ module Default
 
     module Link
 
-        public
+        private
 
             def do_link_clean
                 FileUtils.rm_rf("#{pkg_state_dir}/link")
@@ -77,12 +77,12 @@ module Default
 
     module Image
 
-        public
+        private
 
-        def do_make_bin
-        end
+            def do_make_bin
+            end
 
-        def do_make_hex
-        end
+            def do_make_hex
+            end
     end
 end

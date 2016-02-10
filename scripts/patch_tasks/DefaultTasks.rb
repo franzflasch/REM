@@ -23,8 +23,6 @@ module DefaultPatch
 
         private
 
-        public
-
             def do_patch
                 main_working_dir = global_config.get_main_working_dir
                 self.patches_array.each do |e|

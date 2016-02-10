@@ -18,46 +18,28 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
+# Global Config
 require_relative "scripts/global_config"
+
+# Machine and compiler specific 
 require_relative "machine_conf/#{global_config.get_arch}/#{global_config.get_mach}"
-require_relative "scripts/package_download"
-require_relative "scripts/package_prepare"
-require_relative "scripts/package_patch"
-require_relative "scripts/package"
 require_relative "scripts/#{global_config.compiler}_tasks/DefaultTasks"
+
+# Prepare and Patch tasks:
+require_relative "scripts/download_tasks/DefaultTasks"
+require_relative "scripts/prepare_tasks/DefaultTasks"
+require_relative "scripts/patch_tasks/DefaultTasks"
+
+# Generic
 require_relative "scripts/helper"
+require_relative "scripts/package"
 
 require "find"
 require "fileutils"
 
-def create_OMM_workdir
-    FileUtils.mkdir_p(BUILD_DIR)
-    FileUtils.mkdir_p(DL_DIR)
-    FileUtils.mkdir_p(DL_STATE_DIR)
-end
 
-def parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, recipe_file)
-    sw_package_set(SoftwarePackage.new(pkg_name, pkg_basedir))
-    load "./#{recipe_file}"
-
-    # OBSOLETE: This is a little bit hacky, but the best solution I could find so far:
-    # The sw_package object will be filled in the recipe itself, so evaluate the recipe file here:
-    #eval(File.open(recipe_file).read)
-
-    cur_pkg = Package.new(sw_package)
-
-    # Extend custom tasks
-    if !sw_package.custom_tasks.nil?
-        cur_pkg.extend sw_package.custom_tasks
-    end
-
-    return cur_pkg
-end
-
+# Main:
 namespace :package do
-    # At first set the main rakefile base directory
-    global_config.set_main_working_dir(Rake.original_dir)
-
 
     mk_files = []
     package_list = []
@@ -67,12 +49,6 @@ namespace :package do
     $global_sw_package
     def sw_package; return $global_sw_package; end
     def sw_package_set(pkg); $global_sw_package = pkg; end
-
-    extend DownloadPackage
-
-    def get_package_state_file(name, which)
-        return "#{global_config.get_state_dir()}/#{name}/#{which}"
-    end
 
     def get_recipes
         project_folders = "#{global_config.get_project_folder()}".split(" ")
@@ -90,8 +66,29 @@ namespace :package do
         return files
     end
 
+    def create_workdir
+        FileUtils.mkdir_p(BUILD_DIR)
+        FileUtils.mkdir_p(DL_DIR)
+        FileUtils.mkdir_p(DL_STATE_DIR)
+    end
+
+    def parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, recipe_file)
+        sw_package_set(SoftwarePackage.new(pkg_name, pkg_basedir))
+        load "./#{recipe_file}"
+
+        # Initialize internal recipe infos
+        cur_pkg = Package.new(sw_package)
+
+        # Extend custom tasks
+        if !sw_package.custom_tasks.nil?
+            cur_pkg.extend sw_package.custom_tasks
+        end
+
+        return cur_pkg
+    end
+
     def prepare_recipes(recipes)
-        found_packages = []
+        package_ref_list = SoftwarePackageList.new()
         recipe_filenames = []
 
         print_debug "Including recipes..."
@@ -117,25 +114,18 @@ namespace :package do
             cur_pkg = parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, r)
 
             # Do some verbose output
-            print_debug "Package: " + cur_pkg.name
-            print_debug "Sources: "
-            cur_pkg.src_array.each {|src| print_debug "        #{src}"}
-            print_debug "Deps: "
-            cur_pkg.deps_array.each {|dep| print_debug "        #{dep}"}
-            print_debug " "
-
-            print_debug "#{cur_pkg.name} #{cur_pkg.arch} #{cur_pkg.mach}"
+            print_debug "#{cur_pkg.get_info}"
 
             case cur_pkg.arch
                 when "generic"
                     if cur_pkg.mach == "generic"
-                        found_packages.push(cur_pkg)                        
+                        package_ref_list.append("#{cur_pkg.name}", cur_pkg)                        
                     else
                         abort "Invalid ARCH-MACH Combination: arch:#{cur_pkg.arch} mach:#{cur_pkg.mach}"
                     end                    
                 when "#{global_config.get_arch()}"
                     if (cur_pkg.mach == "generic" or cur_pkg.mach == "#{global_config.get_mach()}")
-                        found_packages.push(cur_pkg)
+                        package_ref_list.append("#{cur_pkg.name}", cur_pkg)
                     else
                         print_debug "MACH Config: #{cur_pkg.mach} does not match - current mach config: #{global_config.get_mach()}, skipping recipe: #{r}"
                     end
@@ -144,12 +134,18 @@ namespace :package do
             end
         end
 
-        return found_packages
+        return package_ref_list
     end
+
+
+    #### Behaviour begin: ####
+
+    # At first set the main rakefile base directory
+    global_config.set_main_working_dir(Rake.original_dir)
 
     # Always check and prepare for recipes:
     print_any("Preparing work directories...")
-    create_OMM_workdir()
+    create_workdir()
 
     print_any("Parsing recipes...")
     mk_files = get_recipes()
@@ -163,7 +159,7 @@ namespace :package do
     dependency_objs = []
 
     # Dynamically create tasks:
-    package_list.each do |pkg|
+    package_list.get_ref_list.each do |pkg|
         namespace :"#{pkg.name}" do
 
             # override the above defined function here, this way it is possible
@@ -191,6 +187,7 @@ namespace :package do
             dep_link_list = []
             
             pkg.deps_array.each do |dep|
+                dep_ref = package_list.get_ref_by_name(dep)
                 dep_depends_chain_list.push("package:"+dep.to_s + ":depends_chain_get")
 
                 # Especially for the non-file tasks:
@@ -198,16 +195,15 @@ namespace :package do
                 dep_depends_link_list.push("package:"+dep.to_s + ":depends_link")
 
                 # For file tasks:
-                dep_compile_list.push("#{get_package_state_file(dep.to_s,"prepare")}")
-                dep_compile_list.push("#{get_package_state_file(dep.to_s,"compile")}")
-                #dep_link_list.push("#{get_package_state_file(dep.to_s,"compile")}")
+                dep_compile_list.push("#{dep_ref.get_package_state_file("prepare")}")
+                dep_compile_list.push("#{dep_ref.get_package_state_file("compile")}")
             end
 
             # Add dependencies to previous tasks:
-            dep_prepare_list.push("#{do_get_download_state("#{pkg.name}_#{pkg.arch}_#{pkg.mach}")}")
+            dep_prepare_list.push("#{pkg.get_download_state_file()}")
 
             # Add own package to the compile dep list
-            dep_compile_list.push("#{get_package_state_file("#{pkg.name}","prepare")}")
+            dep_compile_list.push("#{pkg.get_package_state_file("prepare")}")
 
             # Also add source file dependencies and include folders
             if pkg.uri == "package.local"
@@ -228,14 +224,14 @@ namespace :package do
             end
 
             # Also add the own package to the link dep list
-            dep_link_list.push("#{get_package_state_file("#{pkg.name}","compile")}")
+            dep_link_list.push("#{pkg.get_package_state_file("compile")}")
 
             desc "Do #{pkg.name} clean"
             task :clean, [:what] do |t, args|
                 print_any "Cleaning #{pkg.name}..."
                 case args[:what]
                     when "download"
-                        do_download_clean("#{pkg.name}", "#{pkg.name}_#{pkg.arch}_#{pkg.mach}")
+                        pkg.clean_download()
                     when "prepare"
                         pkg.cleanprepare()
                     when "compile"
@@ -243,7 +239,6 @@ namespace :package do
                     when "link"
                         pkg.clean_link()
                     when "all"
-                        do_download_clean("#{pkg.name}", "#{pkg.name}_#{pkg.arch}_#{pkg.mach}")
                         pkg.cleanall()
                     else
                         abort("Invalid argument #{args[:what]}")
@@ -292,30 +287,29 @@ namespace :package do
                 end
             end
 
-            desc "#{do_get_download_state("#{pkg.name}_#{pkg.arch}_#{pkg.mach}")}"
-            file "#{do_get_download_state("#{pkg.name}_#{pkg.arch}_#{pkg.mach}")}" do
+            desc "#{pkg.get_download_state_file()}"
+            file "#{pkg.get_download_state_file()}" do
                 print_any "Downloading #{pkg.name}..."
-                do_download("#{pkg.name}", "#{pkg.uri}")
-                do_set_download_state("#{pkg.name}_#{pkg.arch}_#{pkg.mach}")
+                pkg.download()
             end
 
-            desc "#{get_package_state_file("#{pkg.name}", "prepare")}"
-            file "#{get_package_state_file("#{pkg.name}", "prepare")}" => dep_prepare_list do
+            desc "#{pkg.get_package_state_file("prepare")}"
+            file "#{pkg.get_package_state_file("prepare")}" => dep_prepare_list do
                 print_any "Preparing #{pkg.name}..."
                 pkg.prepare_package_state_dir()
                 pkg.prepare()
                 print_debug "#{pkg.name} prepare list: #{dep_prepare_list}"
             end
 
-            desc "#{get_package_state_file("#{pkg.name}", "compile")}"
-            file "#{get_package_state_file("#{pkg.name}", "compile")}" =>  dep_compile_list do
+            desc "#{pkg.get_package_state_file("compile")}"
+            file "#{pkg.get_package_state_file("compile")}" =>  dep_compile_list do
                 print_any "Compiling #{pkg.name}..."
                 Rake::Task["package:#{pkg.name}:depends_compile"].invoke()
                 pkg.compile()   
             end
 
-            desc "#{get_package_state_file("#{pkg.name}", "link")}"
-            file "#{get_package_state_file("#{pkg.name}", "link")}" =>  dep_link_list do
+            desc "#{pkg.get_package_state_file("link")}"
+            file "#{pkg.get_package_state_file("link")}" =>  dep_link_list do
                 print_any "Linking #{pkg.name}..."
                 pkg.prepare_package_deploy_dir()
                 Rake::Task["package:#{pkg.name}:depends_link"].invoke()
@@ -323,7 +317,7 @@ namespace :package do
             end
 
             desc "Do #{pkg.name} image"
-            task :image, [:what] => "#{get_package_state_file("#{pkg.name}", "link")}" do |t, args|
+            task :image, [:what] => "#{pkg.get_package_state_file("link")}" do |t, args|
                 print_any "Making image #{pkg.name}..."
                 pkg.make_image("#{args[:what]}")
             end
@@ -334,7 +328,7 @@ namespace :package do
     task :list_packages do |t, args|
         print_any ""
         print_any "Following software packages are available for this architecture: "
-        package_list.each do |pkg|
+        package_list.get_ref_list.each do |pkg|
             print_any "#{pkg.name}"
         end
     end

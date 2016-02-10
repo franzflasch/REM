@@ -18,43 +18,27 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-module DefaultPrepare
-    module PreparePackageBuildDir
+module DefaultDownload
+    module DownloadPackage
 
         private
 
-            def prepare_copy
-                FileUtils.cp_r("#{self.base_dir}/.", self.pkg_build_dir, {:verbose => false})
+            def download_zip
+                execute "wget #{self.uri} -P #{self.pkg_dl_dir}/#{self.name}"
             end
 
-            def prepare_clone_git
-                execute "git clone #{uri} #{self.pkg_build_dir}"
+            def do_download_clean
+                FileUtils.rm_rf("#{self.pkg_dl_dir()}/#{self.name}")
+                FileUtils.rm_rf("#{self.pkg_dl_state_dir()}/#{self.name}")
             end
 
-            def prepare_zip
-                execute "unzip -qq #{global_config.get_dl_dir()}/#{self.name}/#{get_filename_from_uri} -d #{self.pkg_build_dir}"
-            end
-
-        public
-
-            def do_prepare_clean
-                FileUtils.rm_rf(pkg_build_dir)
-                FileUtils.rm_rf("#{pkg_state_dir}/prepare")
-            end
-
-            def do_prepare_builddir
+            def do_download
                 case File.extname(self.uri)
                     when ".local"
-                        print_debug "Local package"
-                        prepare_copy()
+                        print_debug "Local package nothing do download"
                     when ".zip"
                         print_debug "Zip package"
-                        prepare_zip()
-                        # Also copy the files within the pkg folder
-                        prepare_copy()
-                    when ".git"
-                        print_debug "Git repo"
-                        prepare_clone_git()
+                        download_zip()
                     else
                         abort('No valid URI type!')
                 end

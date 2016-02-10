@@ -18,10 +18,44 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
+# Class for associating a package name with the swpackage reference
+class SoftwarePackageList
+    attr_accessor :name_list
+    attr_accessor :ref_list
+
+    def initialize()
+        @name_list = []
+        @ref_list = []
+    end
+
+    def append(name, ref)
+        self.name_list.push(name)
+        self.ref_list.push(ref)
+    end
+
+    def get_ref_by_name(name)
+        result = self.name_list.index(name)
+        if result == nil
+            return nil
+        else
+            return self.ref_list[result]
+        end
+    end
+
+    def get_ref_list
+        return self.ref_list
+    end
+end
+
+
 # This is only used for the recipes
 class SoftwarePackage
 
+    # package name
     attr_accessor :name
+    # package type - not really used at the moment, but it is intended to 
+    # be used for build tasks other than the DefaultTasks - please see below:
+    # At the moment the this class is only extended by default tasks
     attr_accessor :type
     attr_accessor :srcs
     attr_accessor :incdirs
@@ -35,6 +69,8 @@ class SoftwarePackage
     attr_accessor :global_linker_flags
     attr_reader :base_dir
 
+    attr_reader :pkg_dl_dir
+    attr_reader :pkg_dl_state_dir
     attr_reader :pkg_build_dir
     attr_reader :pkg_deploy_dir
     attr_reader :pkg_state_dir
@@ -56,6 +92,8 @@ class SoftwarePackage
         @global_linker_flags = []
         @base_dir = base_dir
 
+        @pkg_dl_dir = "#{global_config.get_dl_dir()}"
+        @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}"
         @pkg_build_dir = "#{global_config.get_build_dir()}/#{self.name}"
         @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{self.name}"
         @pkg_state_dir = "#{global_config.get_state_dir()}/#{self.name}"
@@ -70,7 +108,7 @@ class SoftwarePackage
     end
 end
 
-
+# The derived class will be used internally
 class Package < SoftwarePackage
 
     attr_reader :deps_array
@@ -99,6 +137,10 @@ class Package < SoftwarePackage
             return File.basename(self.uri)
         end
 
+        def set_download_done()
+            execute "touch #{self.pkg_dl_state_dir}/#{self.name}"
+        end
+
         def set_state_done(which)
             execute "touch #{self.pkg_state_dir}/#{which}"
         end
@@ -120,6 +162,8 @@ class Package < SoftwarePackage
             @global_linker_flags = swpackage_ref.global_linker_flags
             @base_dir = swpackage_ref.base_dir
 
+            @pkg_dl_dir = swpackage_ref.pkg_dl_dir
+            @pkg_dl_state_dir = swpackage_ref.pkg_dl_state_dir
             @pkg_build_dir = swpackage_ref.pkg_build_dir
             @pkg_deploy_dir = swpackage_ref.pkg_deploy_dir
             @pkg_state_dir = swpackage_ref.pkg_state_dir
@@ -140,7 +184,7 @@ class Package < SoftwarePackage
                 when "default"
                     print_debug "default task"
                     #extend Default::PrepareFoldersPackage
-                    #extend Default::DownloadPackage
+                    extend DefaultDownload::DownloadPackage
                     extend DefaultPrepare::PreparePackageBuildDir
                     extend DefaultPatch::Patch
                     extend Default::Compile
@@ -157,12 +201,25 @@ class Package < SoftwarePackage
             end            
         end
 
+        def get_download_state_file()
+            return "#{self.pkg_dl_state_dir}/#{self.name}"
+        end
+
+        def get_package_state_file(which)
+            return "#{self.pkg_state_dir}/#{which}"
+        end
+
         def get_incdirs
             return self.inc_dirs_prepared
         end
 
         def get_objs
             return self.obj_files_prepared
+        end
+
+        def download
+            do_download()
+            set_download_done()
         end
 
         def prepare_package_state_dir
@@ -178,8 +235,8 @@ class Package < SoftwarePackage
         end
 
         def prepare
-            self.do_prepare_builddir()
-            self.do_patch()
+            do_prepare_builddir()
+            do_patch()
             set_state_done("prepare")
         end
 
@@ -201,46 +258,59 @@ class Package < SoftwarePackage
 
         def compile
             print_debug "Compiling package #{self.name}..."
-            self.do_compile()
+            do_compile()
             set_state_done("compile")
         end
 
         def link(objs)
             print_debug "Linking package #{self.name}..."
-            self.do_link(objs)
+            do_link(objs)
             set_state_done("link")
         end
 
         def make_image(which)
             case which
                 when "bin"
-                    self.do_make_bin()
+                    do_make_bin()
                 when "hex"
-                    self.do_make_hex()
+                    do_make_hex()
                 else
                     abort("Invalid image argument!")
             end
         end
 
+        def clean_download
+            print_debug "cleaning prepare package #{self.name}"
+            do_download_clean()
+        end
+
         def clean_prepare
             print_debug "cleaning prepare package #{self.name}"
-            self.do_prepare_clean()
+            do_prepare_clean()
         end
 
         def clean_compile
             print_debug "cleaning compile package #{self.name}"
-            self.do_compile_clean()
+            do_compile_clean()
         end
 
         def clean_link
             print_debug "cleaning link package #{self.name}"
-            self.do_link_clean()
+            do_link_clean()
         end
 
         def cleanall
             print_debug "cleaning all for package #{self.name}"
-            self.do_prepare_clean()
-            self.do_compile_clean()
-            self.do_link_clean()
+            do_download_clean()
+            do_prepare_clean()
+            do_compile_clean()
+            do_link_clean()
+        end
+
+        def get_info
+            ret_string = "NAME: #{self.name}\n" 
+            ret_string << "TYPE: #{self.type}\n"
+            ret_string << "DEPS: #{self.deps}\n"
+            ret_string << "URI: #{self.uri}\n"
         end
 end

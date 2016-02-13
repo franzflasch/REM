@@ -30,26 +30,26 @@ module Default
             def do_compile
                 print_debug "hey I am the SDCC compile function"
 
-                print_debug "IncDirs: #{self.incdirs}"
-                print_debug "IncDirsPrepared: #{self.inc_dirs_prepared}"
-                print_debug "SrcFilesPrepared: #{self.src_files_prepared}"
+                print_debug "IncDirs: #{incdirs}"
+                print_debug "IncDirsPrepared: #{inc_dirs_prepared}"
+                print_debug "SrcFilesPrepared: #{src_files_prepared}"
 
                 inc_dirs_string = ""
-                self.inc_dirs_prepared.each do |e|
+                inc_dirs_prepared.each do |e|
                     inc_dirs_string << "#{e} "
                 end
 
                 defines_string = ""
 
                 # local package defines
-                self.defs.each do |e|
+                defs.each do |e|
                     defines_string << "-D#{e} "
                 end
 
                 defines_string << "#{global_config.get_defines()}"
 
                 src_files_prepared.each_with_index  do |src, obj|
-                    execute "#{global_config.get_compiler} #{defines_string} #{global_config.get_compile_flags()} #{inc_dirs_string} -c #{src} -o #{self.obj_files_prepared[obj]}"
+                    execute "#{global_config.get_compiler} #{defines_string} #{global_config.get_compile_flags()} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
                 end
             end
     end
@@ -70,7 +70,7 @@ module Default
                     objs_string << "#{e} "
                 end
 
-                execute "#{global_config.get_compiler} #{global_config.get_link_flags()} #{objs_string} -o #{self.pkg_deploy_dir}/#{self.name}.ihx"
+                execute "#{global_config.get_compiler} #{global_config.get_link_flags()} #{objs_string} -o #{pkg_deploy_dir}/#{name}.ihx"
                 #set_state_done("link")
             end
     end

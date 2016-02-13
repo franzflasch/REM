@@ -24,17 +24,16 @@ module DefaultPrepare
         private
 
             def prepare_copy
-                FileUtils.cp_r("#{self.base_dir}/.", self.pkg_build_dir, {:verbose => false})
+                FileUtils.cp_r("#{base_dir}/.", pkg_build_dir, {:verbose => false})
             end
 
             def prepare_clone_git
-                execute "git clone #{uri} #{self.pkg_build_dir}"
+                execute "git clone #{uri} #{pkg_build_dir}"
             end
 
             def prepare_zip
-                execute "unzip -qq #{global_config.get_dl_dir()}/#{self.name}/#{get_filename_from_uri} -d #{self.pkg_build_dir}"
+                execute "unzip -qq #{global_config.get_dl_dir()}/#{name}/#{get_filename_from_uri} -d #{pkg_build_dir}"
             end
-
 
             def do_prepare_clean
                 FileUtils.rm_rf(pkg_build_dir)
@@ -42,15 +41,13 @@ module DefaultPrepare
             end
 
             def do_prepare_builddir
-                case File.extname(self.uri)
+                case File.extname(uri)
                     when ".local"
                         print_debug "Local package"
                         prepare_copy()
                     when ".zip"
                         print_debug "Zip package"
                         prepare_zip()
-                        # Also copy the files within the pkg folder
-                        prepare_copy()
                     when ".git"
                         print_debug "Git repo"
                         prepare_clone_git()

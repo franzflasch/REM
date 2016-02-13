@@ -25,8 +25,8 @@ module DefaultPatch
 
             def do_patch
                 main_working_dir = global_config.get_main_working_dir
-                self.patches_array.each do |e|
-                    execute "patch -d #{self.pkg_build_dir} -i #{main_working_dir}/#{self.base_dir}/#{e} -p1 -t"
+                patches_array.each do |e|
+                    execute "patch -d #{pkg_build_dir} -i #{main_working_dir}/#{base_dir}/#{e} -p1 -t"
                 end                
             end
     end

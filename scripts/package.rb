@@ -18,68 +18,149 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-# Class for associating a package name with the swpackage reference
-class SoftwarePackageList
-    attr_accessor :name_list
-    attr_accessor :ref_list
+require_relative "package_build_functions"
 
-    def initialize()
-        @name_list = []
-        @ref_list = []
-    end
 
-    def append(name, ref)
-        self.name_list.push(name)
-        self.ref_list.push(ref)
-    end
+# This is used for packages to temporarily store the package info in a global variable
+# this is just used for easier handling when defining recipes
+$global_sw_package
+def sw_package; return $global_sw_package; end
+def sw_package_set(pkg); $global_sw_package = pkg; end
 
-    def get_ref_by_name(name)
-        result = self.name_list.index(name)
-        if result == nil
-            return nil
-        else
-            return self.ref_list[result]
+
+# The derived class will be used internally
+module PackageControl
+
+    private
+        attr_reader :deps_array
+        attr_reader :src_array
+        attr_reader :src_files_prepared
+        attr_reader :obj_files_prepared
+        attr_reader :inc_dir_array
+        attr_reader :inc_dirs_prepared
+        attr_reader :patches_array
+
+        def get_filename_without_extension_from_uri(string, extension)
+            return File.basename(string, extension)
         end
-    end
 
-    def get_ref_list
-        return self.ref_list
-    end
+        def get_uri_without_extension(string)
+            return File.join(File.dirname(string), File.basename(string, '.*'))
+        end
+
+        def get_filename_from_uri
+            return File.basename(uri)
+        end
+
+        def set_download_done()
+            execute "touch #{pkg_dl_state_dir}/#{name}"
+        end
+
+        def set_state_done(which)
+            execute "touch #{pkg_state_dir}/#{which}"
+        end
+
+    public
+
+        def get_download_state_file()
+            return "#{pkg_dl_state_dir}/#{name}"
+        end
+
+        def get_package_state_file(which)
+            return "#{pkg_state_dir}/#{which}"
+        end
+
+        def get_incdirs
+            return inc_dirs_prepared
+        end
+
+        def get_objs
+            return obj_files_prepared
+        end
+
+        def get_global_defines
+            return global_defines
+        end
+
+        def get_global_linker_flags
+            return global_linker_flags
+        end
+
+        def get_name
+            return name
+        end
+
+        def get_arch
+            return arch
+        end
+
+        def get_mach
+            return mach
+        end
+
+        def get_uri
+            return uri
+        end
+
+        def get_base_dir
+            return base_dir
+        end
+
+        def get_deps_array
+            return deps_array
+        end
+
+        def get_src_array
+            return src_array
+        end
+
+        def get_inc_dir_array
+            return inc_dir_array
+        end
 end
-
 
 # This is only used for the recipes
 class SoftwarePackage
+ 
+        # package name
+        attr_reader :name
+        # package type - not really used at the moment, but it is intended to 
+        # be used for build tasks other than the DefaultTasks - please see below:
+        # At the moment the this class is only extended by default tasks
+        attr_reader :download_type
+        attr_reader :prepare_type
+        attr_reader :patch_type
+        attr_reader :build_type
 
-    # package name
-    attr_accessor :name
-    # package type - not really used at the moment, but it is intended to 
-    # be used for build tasks other than the DefaultTasks - please see below:
-    # At the moment the this class is only extended by default tasks
-    attr_accessor :type
-    attr_accessor :srcs
-    attr_accessor :incdirs
-    attr_accessor :patches
-    attr_accessor :deps
-    attr_accessor :defs
-    attr_accessor :uri
-    attr_accessor :arch
-    attr_accessor :mach
-    attr_accessor :global_defines
-    attr_accessor :global_linker_flags
-    attr_reader :base_dir
+        attr_reader :srcs
+        attr_reader :incdirs
+        attr_reader :patches
+        attr_reader :deps
+        attr_reader :defs
+        attr_reader :uri
+        attr_reader :arch
+        attr_reader :mach
+        attr_reader :global_defines
+        attr_reader :global_linker_flags
+        attr_reader :custom_tasks
 
-    attr_reader :pkg_dl_dir
-    attr_reader :pkg_dl_state_dir
-    attr_reader :pkg_build_dir
-    attr_reader :pkg_deploy_dir
-    attr_reader :pkg_state_dir
+        attr_reader :base_dir
+        attr_reader :pkg_dl_dir
+        attr_reader :pkg_dl_state_dir
+        attr_reader :pkg_build_dir
+        attr_reader :pkg_deploy_dir
+        attr_reader :pkg_state_dir
 
-    attr_accessor :custom_tasks
+        include PackageControl
 
-    def initialize(pkg_name, base_dir)
+    def initialize(pkg_name, base_dir, recipe_file)
         @name = pkg_name
-        @type = "default"
+
+        @download_type = "default"
+        @prepare_type = "default"
+        @patch_type = "default"
+        @build_type = "default"
+
         @srcs = ""
         @incdirs = ""
         @patches = ""
@@ -94,223 +175,147 @@ class SoftwarePackage
 
         @pkg_dl_dir = "#{global_config.get_dl_dir()}"
         @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}"
-        @pkg_build_dir = "#{global_config.get_build_dir()}/#{self.name}"
-        @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{self.name}"
-        @pkg_state_dir = "#{global_config.get_state_dir()}/#{self.name}"
+        @pkg_build_dir = "#{global_config.get_build_dir()}/#{name}"
+        @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}"
+        @pkg_state_dir = "#{global_config.get_state_dir()}/#{name}"
+
+        # OK, we are done with the default setup, now load the recipe file and setup internals
+        sw_package_set(self)
+        load "./#{recipe_file}"
+
+        @deps_array = deps.split(" ")
+        @src_array = srcs.split(" ")
+        @src_files_prepared = []
+        @obj_files_prepared = []
+        @inc_dir_array = incdirs.split(" ")
+        @inc_dirs_prepared = []
+        @patches_array = patches.split(" ")
+
+        case download_type
+            when "default"
+                print_debug "default download task"
+                extend DefaultDownload::DownloadPackage
+            else
+                abort("Package download_type #{download_type} not known")
+        end
+
+        case prepare_type
+            when "default"
+                print_debug "default prepare task"
+                extend DefaultPrepare::PreparePackageBuildDir
+            else
+                abort("Package download_type #{prepare_type} not known")
+        end
+
+        case patch_type
+            when "default"
+                print_debug "default patch task"
+                extend DefaultPatch::Patch
+            else
+                abort("Package download_type #{patch_type} not known")
+        end
+
+        case build_type
+            when "default"
+                print_debug "default build task"
+                extend Default::Compile
+                extend Default::Link
+                extend Default::Image
+            # when "SomeOtherTasks"
+            #     print_debug "Some other task"
+            #     #extend SomeOtherTasks::DownloadPackage
+            #     extend SomeOtherTasks::PreparePackageBuildDir
+            #     extend SomeOtherTasks::Compile
+            else
+                abort("Package build_type #{build_type} not known")
+        end
+
+        # Extend custom tasks
+        if !custom_tasks.nil?
+            extend custom_tasks
+        end
+
+        # Extend with various modules here
+        extend PackageBuildFunctions 
     end
 
     def set_global_define(define)
-        self.global_defines.push(define)
+        global_defines.push(define)
     end
 
     def set_global_linker_flags(flags)
-        self.global_linker_flags.push(flags)
+        global_linker_flags.push(flags)
     end
-end
 
-# The derived class will be used internally
-class Package < SoftwarePackage
+    def set_src(src)
+        @srcs << string_strip(src)
+    end
 
-    attr_reader :deps_array
+    def set_inc(inc)
+        @incdirs << string_strip(inc)
+    end
 
-    attr_reader :src_array
-    attr_reader :src_files_prepared
+    def set_dep(dep)
+        @deps << string_strip(dep)
+    end
 
-    attr_reader :obj_files_prepared
+    def set_uri(uri)
+        @uri = string_strip(uri).strip
+    end
 
-    attr_reader :inc_dir_array
-    attr_reader :inc_dirs_prepared
+    def set_arch(arch)
+        @arch = string_strip(arch).strip
+    end
 
-    attr_reader :patches_array
+    def set_mach(mach)
+        @mach = string_strip(mach).strip
+    end
+
+    def set_def(define)
+        @defs << string_strip(define)
+    end
+
+    def set_patch(patch)
+        @patches << string_strip(patch)
+    end
+
+    def set_custom_tasks(tasks)
+        @custom_tasks = tasks
+    end
 
     private
 
-        def get_filename_without_extension_from_uri(string, extension)
-            return File.basename(string, extension)
-        end
-
-        def get_uri_without_extension(string)
-            return File.join(File.dirname(string), File.basename(string, '.*'))
-        end
-
-        def get_filename_from_uri
-            return File.basename(self.uri)
-        end
-
-        def set_download_done()
-            execute "touch #{self.pkg_dl_state_dir}/#{self.name}"
-        end
-
-        def set_state_done(which)
-            execute "touch #{self.pkg_state_dir}/#{which}"
-        end
-
-    public
-
-        def initialize(swpackage_ref)
-            @name = swpackage_ref.name
-            @type = swpackage_ref.type
-            @srcs = swpackage_ref.srcs
-            @incdirs = swpackage_ref.incdirs
-            @patches = swpackage_ref.patches
-            @deps = swpackage_ref.deps
-            @defs = swpackage_ref.defs
-            @uri = swpackage_ref.uri
-            @arch = swpackage_ref.arch
-            @mach = swpackage_ref.mach
-            @global_defines = swpackage_ref.global_defines
-            @global_linker_flags = swpackage_ref.global_linker_flags
-            @base_dir = swpackage_ref.base_dir
-
-            @pkg_dl_dir = swpackage_ref.pkg_dl_dir
-            @pkg_dl_state_dir = swpackage_ref.pkg_dl_state_dir
-            @pkg_build_dir = swpackage_ref.pkg_build_dir
-            @pkg_deploy_dir = swpackage_ref.pkg_deploy_dir
-            @pkg_state_dir = swpackage_ref.pkg_state_dir
-
-            @deps_array = self.deps.split(" ")
-
-            @src_array = self.srcs.split(" ")
-            @src_files_prepared = []
-
-            @obj_files_prepared = []
-
-            @inc_dir_array = self.incdirs.split(" ")
-            @inc_dirs_prepared = []
-
-            @patches_array = self.patches.split(" ")
-
-            case self.type
-                when "default"
-                    print_debug "default task"
-                    #extend Default::PrepareFoldersPackage
-                    extend DefaultDownload::DownloadPackage
-                    extend DefaultPrepare::PreparePackageBuildDir
-                    extend DefaultPatch::Patch
-                    extend Default::Compile
-                    extend Default::Link
-                    extend Default::Image
-                # when "SomeOtherTasks"
-                #     print_debug "Some other task"
-                #     #extend SomeOtherTasks::PrepareFoldersPackage
-                #     #extend SomeOtherTasks::DownloadPackage
-                #     extend SomeOtherTasks::PreparePackageBuildDir
-                #     extend SomeOtherTasks::Compile
-                else
-                    abort("Package type #{self.type} not known")
-            end            
-        end
-
-        def get_download_state_file()
-            return "#{self.pkg_dl_state_dir}/#{self.name}"
-        end
-
-        def get_package_state_file(which)
-            return "#{self.pkg_state_dir}/#{which}"
-        end
-
-        def get_incdirs
-            return self.inc_dirs_prepared
-        end
-
-        def get_objs
-            return self.obj_files_prepared
-        end
-
-        def download
-            do_download()
-            set_download_done()
-        end
-
-        def prepare_package_state_dir
-            FileUtils.mkdir_p(self.pkg_state_dir)
-        end
-
-        def prepare_package_build_dir
-            FileUtils.mkdir_p(self.pkg_build_dir)
-        end
-
-        def prepare_package_deploy_dir
-            FileUtils.mkdir_p(self.pkg_deploy_dir)
-        end
-
-        def prepare
-            do_prepare_builddir()
-            do_patch()
-            set_state_done("prepare")
-        end
-
-        def incdir_prepare(incdirs_depend)
-            #print_debug "IncDir dependencies so far: #{incdirs_depend}"
-            incdirs_depend.each {|e| self.inc_dirs_prepared.push("#{e}")}
-            self.inc_dir_array.each {|e| self.inc_dirs_prepared.push("-I #{self.pkg_build_dir}/#{e}")}
-            @inc_dirs_prepared = self.inc_dirs_prepared.uniq
-        end
-
-        def compile_prepare
-            if self.src_files_prepared.empty?
-                self.src_array.each do |e| 
-                    self.src_files_prepared.push("#{self.pkg_build_dir}/#{e}")
-                    self.obj_files_prepared.push("#{self.pkg_build_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}")
-                end
-            end
-        end
-
-        def compile
-            print_debug "Compiling package #{self.name}..."
-            do_compile()
-            set_state_done("compile")
-        end
-
-        def link(objs)
-            print_debug "Linking package #{self.name}..."
-            do_link(objs)
-            set_state_done("link")
-        end
-
-        def make_image(which)
-            case which
-                when "bin"
-                    do_make_bin()
-                when "hex"
-                    do_make_hex()
-                else
-                    abort("Invalid image argument!")
-            end
-        end
-
-        def clean_download
-            print_debug "cleaning prepare package #{self.name}"
-            do_download_clean()
-        end
-
-        def clean_prepare
-            print_debug "cleaning prepare package #{self.name}"
-            do_prepare_clean()
-        end
-
-        def clean_compile
-            print_debug "cleaning compile package #{self.name}"
-            do_compile_clean()
-        end
-
-        def clean_link
-            print_debug "cleaning link package #{self.name}"
-            do_link_clean()
-        end
-
-        def cleanall
-            print_debug "cleaning all for package #{self.name}"
-            do_download_clean()
-            do_prepare_clean()
-            do_compile_clean()
-            do_link_clean()
-        end
-
-        def get_info
-            ret_string = "NAME: #{self.name}\n" 
-            ret_string << "TYPE: #{self.type}\n"
-            ret_string << "DEPS: #{self.deps}\n"
-            ret_string << "URI: #{self.uri}\n"
+        def string_strip(val)
+            return "#{val.gsub(/\s+/, " ").strip} "
         end
 end
+
+# Class for associating a package name with the swpackage reference
+class SoftwarePackageList
+    attr_accessor :name_list
+    attr_accessor :ref_list
+
+    def initialize()
+        @name_list = []
+        @ref_list = []
+    end
+
+    def append(name, ref)
+        name_list.push(name)
+        ref_list.push(ref)
+    end
+
+    def get_ref_by_name(name)
+        result = name_list.index(name)
+        if result == nil
+            return nil
+        else
+            return ref_list[result]
+        end
+    end
+
+    def get_ref_list
+        return ref_list
+    end
+end
+

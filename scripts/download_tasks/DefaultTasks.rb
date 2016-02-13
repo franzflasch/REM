@@ -24,16 +24,16 @@ module DefaultDownload
         private
 
             def download_zip
-                execute "wget #{self.uri} -P #{self.pkg_dl_dir}/#{self.name}"
+                execute "wget #{uri} -P #{pkg_dl_dir}/#{name}"
             end
 
             def do_download_clean
-                FileUtils.rm_rf("#{self.pkg_dl_dir()}/#{self.name}")
-                FileUtils.rm_rf("#{self.pkg_dl_state_dir()}/#{self.name}")
+                FileUtils.rm_rf("#{pkg_dl_dir()}/#{name}")
+                FileUtils.rm_rf("#{pkg_dl_state_dir()}/#{name}")
             end
 
             def do_download
-                case File.extname(self.uri)
+                case File.extname(uri)
                     when ".local"
                         print_debug "Local package nothing do download"
                     when ".zip"

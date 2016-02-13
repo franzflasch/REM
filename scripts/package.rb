@@ -20,9 +20,8 @@
 
 require_relative "package_build_functions"
 
-
-# This is used for packages to temporarily store the package info in a global variable
-# this is just used for easier handling when defining recipes
+# # This is used for packages to temporarily store the package info in a global variable
+# # this is just used for easier handling when defining recipes
 $global_sw_package
 def sw_package; return $global_sw_package; end
 def sw_package_set(pkg); $global_sw_package = pkg; end
@@ -153,8 +152,10 @@ class SoftwarePackage
 
         include PackageControl
 
-    def initialize(pkg_name, base_dir, recipe_file)
-        @name = pkg_name
+    def initialize(recipe_file)
+        # Extract the name of the package from the recipe name
+        @name = File.basename(recipe_file, File.extname(recipe_file))
+        @base_dir = File.dirname(recipe_file)
 
         @download_type = "default"
         @prepare_type = "default"
@@ -171,7 +172,6 @@ class SoftwarePackage
         @mach = "generic"
         @global_defines = []
         @global_linker_flags = []
-        @base_dir = base_dir
 
         @pkg_dl_dir = "#{global_config.get_dl_dir()}"
         @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}"
@@ -182,6 +182,10 @@ class SoftwarePackage
         # OK, we are done with the default setup, now load the recipe file and setup internals
         sw_package_set(self)
         load "./#{recipe_file}"
+
+        # override the above defined function here, this way it is possible
+        # to use "sw_package." in the method context also (for e.g if custom build methods are used)
+        def sw_package; return self; end
 
         @deps_array = deps.split(" ")
         @src_array = srcs.split(" ")
@@ -318,4 +322,3 @@ class SoftwarePackageList
         return ref_list
     end
 end
-

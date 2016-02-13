@@ -65,8 +65,8 @@ namespace :package do
         FileUtils.mkdir_p(DL_STATE_DIR)
     end
 
-    def parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, recipe_file)
-        cur_pkg = SoftwarePackage.new(pkg_name, pkg_basedir, recipe_file)
+    def parse_recipe_file_and_fill_package_info(recipe_file)
+        cur_pkg = SoftwarePackage.new(recipe_file)
         return cur_pkg
     end
 
@@ -89,12 +89,8 @@ namespace :package do
 
             print_debug "parsing recipe " + r + ":"
 
-            # Extract the name of the package from the recipe name
-            pkg_name = File.basename(r, File.extname(r))
-            pkg_basedir = File.dirname(r)
-
             # Parse and include submakefiles
-            cur_pkg = parse_recipe_file_and_fill_package_info(pkg_name, pkg_basedir, r)
+            cur_pkg = parse_recipe_file_and_fill_package_info(r)
 
             # Do some verbose output
             print_debug "#{cur_pkg.get_info}"
@@ -114,8 +110,6 @@ namespace :package do
                     end
                 else
                     print_debug "ARCH Config: #{cur_pkg.get_arch} does not match - current arch config: #{global_config.get_arch}, skipping recipe: #{r}"
-
-                print("DASdsa #{cur_pkg}")
             end
         end
 
@@ -147,10 +141,6 @@ namespace :package do
     package_list.get_ref_list.each do |pkg|
         namespace :"#{pkg.get_name}" do
 
-            # override the above defined function here, this way it is possible
-            # to use "sw_package." in the method context also (for e.g if custom build methods are used)
-            def sw_package; return self; end
-
             # set global defines
             pkg.get_global_defines.each do |e|
                 global_config.set_define("#{e}")
@@ -174,6 +164,11 @@ namespace :package do
             pkg.get_deps_array.each do |dep|
                 print("#{dep}\n")
                 dep_ref = package_list.get_ref_by_name(dep)
+
+                if dep_ref.nil?
+                    abort("No recipe found for #{dep}, needed by #{pkg.name}")
+                end
+
                 dep_depends_chain_list.push("package:"+dep.to_s + ":depends_chain_get")
 
                 # Especially for the non-file tasks:

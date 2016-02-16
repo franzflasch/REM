@@ -23,27 +23,28 @@ require_relative "./config/config"
 
 
 class GlobalConfig
-    attr_accessor :main_working_dir
+    attr_reader :main_working_dir
 
-    attr_accessor :arch
-    attr_accessor :mach
+    attr_reader :arch
+    attr_reader :mach
 
-    attr_accessor :project_folder
+    attr_reader :project_folder
 
-    attr_accessor :build_dir    
-    attr_accessor :state_dir
-    attr_accessor :deploy_dir
+    attr_reader :build_dir    
+    attr_reader :state_dir
+    attr_reader :deploy_dir
 
-    attr_accessor :download_dir
-    attr_accessor :download_state_dir
+    attr_reader :download_dir
+    attr_reader :download_state_dir
 
-    attr_accessor :prefix
-    attr_accessor :compiler
-    attr_accessor :obj_cp
-    attr_accessor :defines
-    attr_accessor :compile_flags
-    attr_accessor :link_flags
-    attr_accessor :compiler_obj_extension
+    attr_reader :prefix
+    attr_reader :compiler
+    attr_reader :obj_cp
+    attr_reader :defines
+    attr_reader :compile_flags
+    attr_reader :link_flags
+    attr_reader :compiler_obj_extension
+    attr_reader :obj_copy_flags
 
     attr_reader :cc_prefix
 
@@ -69,6 +70,7 @@ class GlobalConfig
         @compile_flags = []
         @link_flags = []
         @compiler_obj_extension = "o"
+        @obj_copy_flags = []
 
         @cc_prefix = ""
     end
@@ -77,64 +79,64 @@ class GlobalConfig
     # can be called from anywhere:
 
     def get_main_working_dir
-        return self.main_working_dir
+        return main_working_dir
     end
 
     def get_arch
-        return self.arch 
+        return arch 
     end
 
     def get_mach
-        return self.mach
+        return mach
     end
 
     def get_project_folder
-        return self.project_folder
+        return project_folder
     end
 
     def get_build_dir
-        return self.build_dir
+        return build_dir
     end
 
     def get_state_dir
-        return self.state_dir
+        return state_dir
     end
 
     def get_deploy_dir
-        return self.deploy_dir
+        return deploy_dir
     end
 
     def get_dl_dir
-        return self.download_dir
+        return download_dir
     end
 
     def get_dl_state_dir
-        return self.download_state_dir
+        return download_state_dir
     end
 
     def get_compiler_prefix()
-        return self.prefix
+        return prefix
     end
 
     def get_compiler
-        if self.prefix.nil? || self.prefix.empty?
-            return "#{self.compiler}"
+        if prefix.nil? || prefix.empty?
+            return "#{compiler}"
         else
-            return "#{self.prefix}-#{self.compiler}"
+            return "#{prefix}-#{compiler}"
         end
     end
 
     def get_obj_cp
-        if self.prefix.nil? || self.prefix.empty?
-            return "#{self.obj_cp}"
+        if prefix.nil? || prefix.empty?
+            return "#{obj_cp}"
         else
-            return "#{self.prefix}-#{self.obj_cp}"
+            return "#{prefix}-#{obj_cp}"
         end
     end
 
     def get_defines
         defines_string = ""
-        self.defines.each do |e|
+        defines.each do |e|
             defines_string << "-D#{e} "
         end
         return defines_string
@@ -142,7 +144,7 @@ class GlobalConfig
 
     def get_compile_flags
         compile_flags_combined = ""
-        self.compile_flags.each do |e|
+        compile_flags.each do |e|
             compile_flags_combined << "#{e} "
         end
 
@@ -151,7 +153,7 @@ class GlobalConfig
 
     def get_link_flags
         link_flags_combined = ""
-        self.link_flags.each do |e|
+        link_flags.each do |e|
             link_flags_combined << "#{e} "
         end
 
@@ -159,7 +161,16 @@ class GlobalConfig
     end
 
     def get_obj_extension
-        return self.compiler_obj_extension
+        return compiler_obj_extension
+    end
+
+    def get_obj_copy_flags
+        obj_copy_flags_combined = ""
+        obj_copy_flags.each do |e|
+            obj_copy_flags_combined << "#{e} "
+        end
+
+        return obj_copy_flags_combined
     end
 
 
@@ -167,35 +178,39 @@ class GlobalConfig
     # These are the setter methods. They should be considered as 'private'
     # and should only be called from dedicated configure files.
     def set_main_working_dir(dir)
-        self.main_working_dir = dir
+        @main_working_dir = dir
     end
 
     def set_compiler_prefix(prefix)
-        self.prefix = prefix
+        @prefix = prefix
     end
 
     def set_compiler(compiler)
-        self.compiler = compiler
+        @compiler = compiler
     end
 
     def set_obj_cp(obj_cp)
-        self.obj_cp = obj_cp
+        @obj_cp = obj_cp
     end
 
     def set_define(define)
-        self.defines.push(define)
+        @defines.push(define)
     end
 
     def set_compile_flag(flags)
-        self.compile_flags.push(flags)
+        @compile_flags.push(flags)
     end
 
     def set_link_flag(flags)
-        self.link_flags.push(flags)
+        @link_flags.push(flags)
     end
 
     def set_obj_extension(extension)
-        self.compiler_obj_extension = "#{extension}"
+        @compiler_obj_extension = "#{extension}"
+    end
+
+    def set_objcopy_flag(flags)
+        @obj_copy_flags.push(flags)
     end
 end
 

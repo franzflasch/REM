@@ -122,10 +122,6 @@ namespace :package do
     # At first set the main rakefile base directory
     global_config.set_main_working_dir(Rake.original_dir)
 
-    # Always check and prepare for recipes:
-    print_any("Preparing work directories...")
-    create_workdir()
-
     print_any("Parsing recipes...")
     mk_files = get_recipes()
     package_list = prepare_recipes(mk_files)
@@ -249,6 +245,10 @@ namespace :package do
 
             desc "#{pkg.get_download_state_file()}"
             file "#{pkg.get_download_state_file()}" do
+
+                # As this is the first task in the chain create work directories here:
+                Rake::Task["package:create_workdir"].invoke()
+
                 print_any "Downloading #{pkg.get_name}..."
                 pkg.download()
             end
@@ -301,6 +301,11 @@ namespace :package do
                 end
             end
         end
+    end
+
+    task :create_workdir do
+        print_any("Preparing work directories...")
+        create_workdir()
     end
 
     desc "List available packages"

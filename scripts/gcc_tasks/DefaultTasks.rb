@@ -80,11 +80,11 @@ module Default
         private
 
             def do_make_bin
-                execute "#{global_config.get_obj_cp} -O binary -S #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.bin"
+                execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O binary #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.bin"
             end
 
             def do_make_hex
-                execute "#{global_config.get_obj_cp} -R .eeprom -R .fuse -R .lock -R .signature -O ihex #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.hex"
+                execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O ihex #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.hex"
             end
     end
 end

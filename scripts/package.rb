@@ -52,7 +52,7 @@ module PackageControl
         end
 
         def set_download_done()
-            execute "touch #{pkg_dl_state_dir}/#{name}"
+            execute "touch #{pkg_dl_state_dir}"
         end
 
         def set_state_done(which)
@@ -62,7 +62,7 @@ module PackageControl
     public
 
         def get_download_state_file()
-            return "#{pkg_dl_state_dir}/#{name}"
+            return "#{pkg_dl_state_dir}"
         end
 
         def get_package_state_file(which)
@@ -123,6 +123,8 @@ class SoftwarePackage
  
         # package name
         attr_reader :name
+        # unique hash of the package
+        attr_reader :unique_hash
         # package type - not really used at the moment, but it is intended to 
         # be used for build tasks other than the DefaultTasks - please see below:
         # At the moment the this class is only extended by default tasks
@@ -143,11 +145,17 @@ class SoftwarePackage
         attr_reader :global_linker_flags
         attr_reader :custom_tasks
 
+        # base_dir: recipe file location
         attr_reader :base_dir
+        # pkg_dl_dir: download location
         attr_reader :pkg_dl_dir
+        # pkg_dl_state_dir: download state file location
         attr_reader :pkg_dl_state_dir
+        # pkg_build_dir: build working directory
         attr_reader :pkg_build_dir
+        # pkg_deploy_dir: output binary deploy directory
         attr_reader :pkg_deploy_dir
+        # pkg_state_dir: package build state directory
         attr_reader :pkg_state_dir
 
         include PackageControl
@@ -155,6 +163,8 @@ class SoftwarePackage
     def initialize(recipe_file)
         # Extract the name of the package from the recipe name
         @name = File.basename(recipe_file, File.extname(recipe_file))
+        # TODO: implement appropriate way of generating a unique hash of the package
+        @unique_hash = "nohash"
         @base_dir = File.dirname(recipe_file)
 
         @download_type = "default"
@@ -173,11 +183,11 @@ class SoftwarePackage
         @global_defines = []
         @global_linker_flags = []
 
-        @pkg_dl_dir = "#{global_config.get_dl_dir()}"
-        @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}"
-        @pkg_build_dir = "#{global_config.get_build_dir()}/#{name}"
-        @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}"
-        @pkg_state_dir = "#{global_config.get_state_dir()}/#{name}"
+        @pkg_dl_dir = "#{global_config.get_dl_dir()}/#{name}_#{unique_hash}"
+        @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}/#{name}_#{unique_hash}"
+        @pkg_build_dir = "#{global_config.get_build_dir()}/#{name}_#{unique_hash}"
+        @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}_#{unique_hash}"
+        @pkg_state_dir = "#{global_config.get_state_dir()}/#{name}_#{unique_hash}"
 
         # OK, we are done with the default setup, now load the recipe file and setup internals
         sw_package_set(self)

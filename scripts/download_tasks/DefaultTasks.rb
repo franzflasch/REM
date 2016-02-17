@@ -24,12 +24,12 @@ module DefaultDownload
         private
 
             def download_zip
-                execute "wget #{uri} -P #{pkg_dl_dir}/#{name}"
+                execute "wget #{uri} -P #{pkg_dl_dir}"
             end
 
             def do_download_clean
-                FileUtils.rm_rf("#{pkg_dl_dir()}/#{name}")
-                FileUtils.rm_rf("#{pkg_dl_state_dir()}/#{name}")
+                FileUtils.rm_rf("#{pkg_dl_dir}")
+                FileUtils.rm_rf("#{pkg_dl_state_dir}")
             end
 
             def do_download

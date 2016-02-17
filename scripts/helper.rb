@@ -34,16 +34,6 @@ def check_duplicates(array)
     return array.select{|element| array.count(element) > 1 }
 end
 
-def print_debug(text)
-    if(VERBOSE == "1")
-        puts text
-    end
-end
-
-def print_any(text)
-    puts text
-end
-
 def execute2(cmd)
     if(VERBOSE == "0")
         # everything has to be quiet

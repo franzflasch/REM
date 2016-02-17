@@ -32,7 +32,7 @@ module DefaultPrepare
             end
 
             def prepare_zip
-                execute "unzip -qq #{global_config.get_dl_dir()}/#{name}/#{get_filename_from_uri} -d #{pkg_build_dir}"
+                execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri} -d #{pkg_build_dir}"
             end
 
             def do_prepare_clean

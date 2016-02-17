@@ -2,12 +2,12 @@
 Rake based buildsystem for EMbedded Systems and Microcontrollers
 
 ## Prerequisites
-Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)
-ruby (a recent version: >= version 2.2.1)
-rake (a recent version: >= version 10.4.2)
-unzip
-git
-patch
+Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)  
+ruby (a recent version: >= version 2.2.1)  
+rake (a recent version: >= version 10.4.2)  
+unzip  
+git  
+patch  
 
 ## How to build a hex file of the test project suited for an avr atmega168:
 ```Shell
@@ -47,7 +47,7 @@ rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:dep
 ```
 
 ## Currently supported microcontrollers (resp. eval-boards)
-AVR Atmega168
-ST Olimex STM32H103
-ST STM32F3 Discovery
-ST STM32F4 Discovery
+AVR Atmega168  
+ST Olimex STM32H103  
+ST STM32F3 Discovery  
+ST STM32F4 Discovery  

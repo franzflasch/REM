@@ -89,6 +89,11 @@ module PackageControl
             return name
         end
 
+        # Returns the name as array-list
+        def get_name_splitted
+            return name.split
+        end
+
         def get_arch
             return arch
         end

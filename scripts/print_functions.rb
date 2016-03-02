@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2016 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -28,12 +28,17 @@ def print_any_green(text)
     puts "\033[32m#{text}\033[0m\n"
 end
 
+def print_any_red(text)
+    # will produce red text color
+    puts "\033[31m#{text}\033[0m\n"
+end
+
 def print_any(text)
     puts text
 end
 
 def print_abort(text)
     # will produce red text color
-    puts "\033[31m#{text}\033[0m\n"
+    print_any_red(text)
     abort
 end

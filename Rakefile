@@ -37,6 +37,7 @@ require_relative "scripts/package"
 
 require "find"
 require "fileutils"
+require 'digest'
 
 # Main:
 namespace :package do
@@ -81,39 +82,33 @@ namespace :package do
         print_debug "Including recipes..."
 
         # Remove directory from all recipes - this is needed to check for duplicates
-        recipes.each {|e| recipe_filenames << File.basename(e)}
+        recipes.each {|e| recipe_filenames.push(get_filename_from_uri(e))}
 
-        # Now put warning if there are any duplicate recipes
-        duplicates = check_duplicates(recipe_filenames)
-        if duplicates.uniq.any?
-            print_abort ("ERROR: Duplicates in the recipe list: #{duplicates.uniq}")
-        end
+        check_duplicates_exit_with_error(recipe_filenames, "recipes")
 
         recipes.each do |r|
 
-            print_debug "parsing recipe " + r + ":"
+            print_debug "parsing recipe #{r}:"
 
             # Parse and include submakefiles
             cur_pkg = parse_recipe_file_and_fill_package_info(r)
 
-            # Do some verbose output
-            print_debug "#{cur_pkg.get_info}"
+            # Filter out packages which do not match arch or mach config
+            arch_config = cur_pkg.get_arch
+            mach_config = cur_pkg.get_mach
 
-            case cur_pkg.get_arch
-                when "generic"
-                    if cur_pkg.get_mach == "generic"
-                        package_ref_list.append("#{cur_pkg.get_name}", cur_pkg)
-                    else
-                        print_abort "Invalid ARCH-MACH Combination: arch:#{cur_pkg.get_arch} mach:#{cur_pkg.get_mach}"
-                    end
-                when "#{global_config.get_arch}"
-                    if (cur_pkg.get_mach == "generic" or cur_pkg.get_mach == "#{global_config.get_mach}")
-                        package_ref_list.append("#{cur_pkg.get_name}", cur_pkg)
-                    else
-                        print_debug "MACH Config: #{cur_pkg.get_mach} does not match - current mach config: #{global_config.get_mach}, skipping recipe: #{r}"
-                    end
-                else
-                    print_debug "ARCH Config: #{cur_pkg.get_arch} does not match - current arch config: #{global_config.get_arch}, skipping recipe: #{r}"
+            if ( (arch_config == "generic") and  (mach_config == "generic") )
+                package_ref_list.append("#{cur_pkg.get_name}", cur_pkg)
+            elsif ( (arch_config == "#{global_config.get_arch}") and  (mach_config == "generic") )
+                package_ref_list.append("#{cur_pkg.get_name}", cur_pkg)
+            elsif( (arch_config == "generic") and  (mach_config != "generic") )
+                print_abort "Invalid ARCH-MACH Combination: arch:#{cur_pkg.get_arch} mach:#{cur_pkg.get_mach}"
+            elsif( arch_config != "#{global_config.get_arch}" )
+                print_debug "ARCH Config: #{arch_config} does not match - current arch config: #{global_config.get_arch}, skipping recipe: #{r}"
+            elsif ( mach_config != "#{global_config.get_mach}" )
+                print_debug "MACH Config: #{mach_config} does not match - current mach config: #{global_config.get_mach}, skipping recipe: #{r}"
+            else
+                package_ref_list.append("#{cur_pkg.get_name}", cur_pkg)
             end
         end
 
@@ -181,35 +176,53 @@ namespace :package do
 
         namespace :"#{pkg.get_name}" do
 
-            # set global defines
-            pkg.get_global_defines.each do |e|
-                global_config.set_define("#{e}")
-            end
-
-            # set global_linkerflags
-            pkg.get_global_linker_flags.each do |e|
-                global_config.set_link_flag("#{e}")
-            end
-
-
-
             task :get_dep_chain => package_add_non_file_task_dep(global_package_list, pkg.get_deps_array, "get_dep_chain") do
                 global_dep_chain.push("#{pkg.get_name}")
             end
 
-
-
             desc "depends_chain_print"
-            task :depends_chain_print => package_add_non_file_task_dep(global_package_list, pkg.get_deps_array, "depends_chain_print") do
-                tmp_string = ""
-                pkg.get_deps_array.each do |e|
-                    tmp_string << "#{e} "
+            task :depends_chain_print => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain") do
+                global_dep_chain.each do |dep|
+                    dep_ref = global_package_list.get_ref_by_name(dep)
+                    tmp_string = ""
+                    dep_ref.get_deps_array.each do |e|
+                        tmp_string << "#{e} "
+                    end
+                    if tmp_string.to_s == ""
+                        print_any_green("#{dep_ref.get_name}")
+                    else
+                        print_any_green("#{dep_ref.get_name} --> " + tmp_string)
+                    end
                 end
-                if tmp_string.to_s == ""
-                    print_any_green("#{pkg.get_name}")
-                else
-                    print_any_green("#{pkg.get_name} --> " + tmp_string)
+            end
+
+            desc "depends_chain_print_pkg_info"
+            task :depends_chain_print_pkg_info => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain") do
+                # Do some verbose output
+                global_dep_chain.each do |dep|
+                    dep_ref = global_package_list.get_ref_by_name(dep)
+                    print_any_green "#{dep_ref.get_info}"
                 end
+            end
+
+            desc "depends_chain_print_version_hash"
+            task :depends_chain_print_version_hash, [:what] => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain") do |t, args|
+                # Do some verbose output
+                version_string = ""
+                hash = 0
+                global_dep_chain.each do |dep|
+                    dep_ref = global_package_list.get_ref_by_name(dep)
+                    version_string << "#{dep_ref.get_version}"
+                end
+                case args[:what]
+                    when "md5"
+                        hash = Digest::MD5.hexdigest(version_string)
+                    when "sha1"
+                        hash = Digest::SHA1.hexdigest(version_string)
+                    else
+                        print_abort("Invalid argument #{args[:what]}")
+                end
+                print_any_green(hash)
             end
 
 
@@ -230,7 +243,6 @@ namespace :package do
                 print_debug("download: #{pkg.get_name}")
                 create_download_file_task(pkg, global_package_list, 0)
                 Rake::Task["#{pkg.get_download_state_file()}"].invoke()
-                print_debug("finish #{pkg.get_name} download")
             end
 
 
@@ -251,11 +263,7 @@ namespace :package do
                     pkg_ref.get_inc_dir_array.each do |e|
                         header_files = find_files_with_ending("#{pkg_ref.get_base_dir}/#{e}".split(" "), "h")
                     end
-
-                    # Now add it to the dependendy list
-                    header_files.each do |e|
-                        pkg_prepare_list.push("#{e}")
-                    end
+                    pkg_prepare_list.concat(header_files)
                 end
 
                 file "#{pkg_ref.get_package_state_file("prepare")}" => pkg_prepare_list do
@@ -271,12 +279,11 @@ namespace :package do
                 print_debug("prepare: #{pkg.get_name}")
                 create_prepare_file_task(pkg, global_package_list, prepare_tasks_common)
                 Rake::Task["#{pkg.get_package_state_file("prepare")}"].invoke()
-                print_debug("finish: #{pkg.get_name} prepare")
             end
 
 
 
-            compile_tasks_common = [ pkg.get_deps_array, "compile", pkg.get_name_splitted, "prepare"]
+            compile_tasks_common = [ pkg.get_deps_array, "compile", pkg.get_name_splitted, "prepare" ]
             def create_compile_file_task(pkg_ref, package_list, tasks_common)
 
                 pkg_compile_list = package_add_common_task_dep_list(package_list, tasks_common, FILE_TASK)
@@ -285,12 +292,12 @@ namespace :package do
                 dep_inc_array = []
                 pkg_ref.get_deps_array.each do |dep|
                     dep_ref = package_list.get_ref_by_name(dep)
-                    dep_ref.incdir_prepare(dep_inc_array)
-                    dep_inc_array.concat(dep_ref.get_incdirs)
+                    dep_inc_array.concat(dep_ref.get_incdirs_prepared)
                 end
 
-                pkg_ref.compile_prepare()
-                pkg_ref.incdir_prepare(dep_inc_array)
+                pkg_ref.set_dependency_incdirs(dep_inc_array)
+                pkg_ref.incdir_prepare()
+                pkg_ref.compile_and_link_prepare()
 
                 desc "#{pkg_ref.get_package_state_file("compile")}"
                 file "#{pkg_ref.get_package_state_file("compile")}" => pkg_compile_list do
@@ -299,17 +306,28 @@ namespace :package do
                 end
             end
 
+            # The compile task is kind of special, because we need to set all global defines
+            # of the dependency chain before we start with any of the upcoming compile tasks.
+            # It's a pity that it's not possible to integrate this in create_compile_file_task(),
+            # however I haven't found any other solution to this problem yet.
+            task :compile_globals_prepare => package_add_non_file_task_dep(global_package_list, pkg.get_deps_array, "compile_globals_prepare") do
+                # set global defines
+                pkg.get_global_defines.each do |e|
+                    global_config.set_define("#{e}")
+                end
+            end
+
             desc "compile"
-            task :compile => package_add_common_task_dep_list(global_package_list, compile_tasks_common, NON_FILE_TASK) do
+            task :compile => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "compile_globals_prepare") +
+                             package_add_common_task_dep_list(global_package_list, compile_tasks_common, NON_FILE_TASK) do
                 print_debug("compile: #{pkg.get_name}")
                 create_compile_file_task(pkg, global_package_list, compile_tasks_common)
                 Rake::Task["#{pkg.get_package_state_file("compile")}"].invoke()
-                print_debug("finish: #{pkg.get_name} compile")
             end
 
 
 
-            link_tasks_common = [ pkg.get_name_splitted, "compile"]
+            link_tasks_common = [ pkg.get_name_splitted, "compile" ]
             def create_link_file_task(pkg_ref, package_list, tasks_common, dep_chain)
                 pkg_link_list = package_add_common_task_dep_list(package_list, tasks_common, FILE_TASK)
 
@@ -317,8 +335,14 @@ namespace :package do
                 dep_obj_array = []
                 dep_chain.each do |dep|
                     dep_ref = package_list.get_ref_by_name(dep)
-                    dep_ref.compile_prepare()
+                    dep_ref.compile_and_link_prepare()
                     dep_obj_array.concat(dep_ref.get_objs)
+
+                    # Set global linker flags here, as the linker task does not have any other paralell
+                    # executed tasks it is possible to set the linker flags here, locally.
+                    dep_ref.get_global_linker_flags.each do |e|
+                        global_config.set_link_flag("#{e}")
+                    end
                 end
 
                 desc "#{pkg_ref.get_package_state_file("link")}"
@@ -330,12 +354,11 @@ namespace :package do
             end
 
             desc "link"
-            task :link => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain") +
-                          package_add_common_task_dep_list(global_package_list, link_tasks_common, NON_FILE_TASK) do
+            task :link => package_add_common_task_dep_list(global_package_list, link_tasks_common, NON_FILE_TASK) +
+                          package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain") do
                 print_debug("link: #{pkg.get_name}")
                 create_link_file_task(pkg, global_package_list, link_tasks_common, global_dep_chain)
                 Rake::Task["#{pkg.get_package_state_file("link")}"].invoke()
-                print_debug("finish: #{pkg.get_name} link")
             end
 
 
@@ -371,6 +394,8 @@ namespace :package do
         end
     end
 
+
+
     task :create_workdir do
         print_any("Preparing work directories...")
         create_workdir()
@@ -386,7 +411,4 @@ namespace :package do
             print_any "#{pkg.get_name}"
         end
     end
-
-
-
 end

@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -30,42 +30,63 @@ def find_files_with_ending(folders, ending)
     return files
 end
 
-def check_duplicates(array)
+def get_duplicates_in_array(array)
     return array.select{|element| array.count(element) > 1 }
 end
 
-def execute2(cmd)
-    if(VERBOSE == "0")
-        # everything has to be quiet
-        cmd << " >/dev/null 2>&1"
+def check_duplicates_exit_with_error(array, list_name)
+    # Now put warning if there are any duplicate recipes
+    duplicates = get_duplicates_in_array(array)
+    if duplicates.uniq.any?
+        print_abort ("ERROR: Duplicates in #{list_name}, duplicates: #{duplicates.uniq}")
     end
-    print_debug(cmd)
-    exit_code = system(cmd, out: $stdout)
-    if exit_code != true
-        abort("Error when calling #{cmd} - exit code: #{$?.exitstatus}")
-    end
-end
-
-def get_std_lines(input)
-    ret_str = ""
-    while line = input.gets
-        ret_str << line
-    end
-    return ret_str
 end
 
 def execute(cmd)
     Open3.popen2e(cmd) do |stdin, stdout_err, wait_thr|
-        cmd_std_message = get_std_lines(stdout_err)
-        if(VERBOSE != "0")
-            #print_lines(stdout_err)
-            puts "#{cmd}"
+        cmd_std_message = ""
+        print_debug(cmd)
+        stdout_err.each do |line|
+            print_debug(line)
+            cmd_std_message << line
         end
-
         exit_status = wait_thr.value
         unless exit_status.success?
-            puts("Error when calling #{cmd} - exit code: #{exit_status} - STDOUT/STDERR:")
-            abort("#{cmd_std_message}")
+            print_any_red("Error when calling #{cmd} - exit code: #{exit_status} - STDOUT/STDERR:")
+            print_any_red(cmd_std_message)
+            abort
         end
     end
+end
+
+### Removes leading and trailing spaces as well as removing superflous
+### spaces between strings
+def string_strip(val)
+    return "#{val.gsub(/\s+/, " ").strip} "
+end
+
+### Cuts the directory and the extension from the given uri
+def get_filename_without_extension_from_uri(uri)
+    #return File.basename(uri, extension)
+    return File.basename(uri, File.extname(uri))
+end
+
+### Cuts the extension from the given uri
+def get_uri_without_extension(uri)
+    return File.join(File.dirname(uri), File.basename(uri, '.*'))
+end
+
+### Cuts the filename from the given uri
+def get_dirname_from_uri(uri)
+    return File.dirname(uri)
+end
+
+### Cuts the directory from the given uri
+def get_filename_from_uri(uri)
+    return File.basename(uri)
+end
+
+### Returns the file extension from the given uri
+def get_extension_from_uri(uri)
+    return File.extname(uri)
 end

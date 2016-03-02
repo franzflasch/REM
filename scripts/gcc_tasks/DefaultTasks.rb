@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -30,11 +30,14 @@ module Default
             def do_compile
                 print_debug "hey I am the Default compile function"
 
-                print_debug "IncDirs: #{incdirs}"
+                print_debug "IncDirsDependsPrepared: #{inc_dirs_depends_prepared}"
                 print_debug "IncDirsPrepared: #{inc_dirs_prepared}"
                 print_debug "SrcFilesPrepared: #{src_files_prepared}"
 
                 inc_dirs_string = ""
+                inc_dirs_depends_prepared.each do |e|
+                    inc_dirs_string << "#{e} "
+                end
                 inc_dirs_prepared.each do |e|
                     inc_dirs_string << "#{e} "
                 end

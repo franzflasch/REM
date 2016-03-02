@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -26,41 +26,12 @@ $global_sw_package
 def sw_package; return $global_sw_package; end
 def sw_package_set(pkg); $global_sw_package = pkg; end
 
-
-# The derived class will be used internally
+# Package control functions
 module PackageControl
-
-    private
-        attr_reader :deps_array
-        attr_reader :src_array
-        attr_reader :src_files_prepared
-        attr_reader :obj_files_prepared
-        attr_reader :inc_dir_array
-        attr_reader :inc_dirs_prepared
-        attr_reader :patches_array
-
-        def get_filename_without_extension_from_uri(string, extension)
-            return File.basename(string, extension)
-        end
-
-        def get_uri_without_extension(string)
-            return File.join(File.dirname(string), File.basename(string, '.*'))
-        end
-
-        def get_filename_from_uri
-            return File.basename(uri)
-        end
-
-        def set_download_done()
-            execute "touch #{pkg_dl_state_dir}"
-        end
-
-        def set_state_done(which)
-            execute "touch #{pkg_state_dir}/#{which}"
-        end
 
     public
 
+        ### GETTERS ###
         def get_download_state_file()
             return "#{pkg_dl_state_dir}"
         end
@@ -69,7 +40,11 @@ module PackageControl
             return "#{pkg_state_dir}/#{which}"
         end
 
-        def get_incdirs
+        def get_incdirs_depends_prepared
+            return inc_dirs_depends_prepared
+        end
+
+        def get_incdirs_prepared
             return inc_dirs_prepared
         end
 
@@ -87,6 +62,10 @@ module PackageControl
 
         def get_name
             return name
+        end
+
+        def get_version
+            return version
         end
 
         # Returns the name as array-list
@@ -121,16 +100,76 @@ module PackageControl
         def get_inc_dir_array
             return inc_dir_array
         end
+
+        def get_info
+            ret_string = "NAME: #{name}\n"
+            ret_string << "Version: #{version}\n"
+            ret_string << "build_type: #{build_type}\n"
+            ret_string << "DEPS: #{deps}\n"
+            ret_string << "URI: #{uri}\n"
+        end
+
+
+        ### SETTERS ###
+        def set_global_define(define)
+            global_defines.push(define)
+        end
+
+        def set_global_linker_flags(flags)
+            global_linker_flags.push(flags)
+        end
+
+        def set_version(version)
+            @version = version
+        end
+
+        def set_src(src)
+            @srcs << string_strip(src)
+        end
+
+        def set_inc(inc)
+            @incdirs << string_strip(inc)
+        end
+
+        def set_dep(dep)
+            @deps << string_strip(dep)
+        end
+
+        def set_uri(uri)
+            @uri = string_strip(uri).strip
+        end
+
+        def set_arch(arch)
+            @arch = string_strip(arch).strip
+        end
+
+        def set_mach(mach)
+            @mach = string_strip(mach).strip
+        end
+
+        def set_def(define)
+            defs.push(string_strip(define))
+        end
+
+        def set_patch(patch)
+            @patches << string_strip(patch)
+        end
+
+        def set_custom_tasks(tasks)
+            @custom_tasks = tasks
+        end
 end
 
 # This is only used for the recipes
 class SoftwarePackage
- 
+
+    public
         # package name
         attr_reader :name
+        attr_reader :version
         # unique hash of the package
         attr_reader :unique_hash
-        # package type - not really used at the moment, but it is intended to 
+        # package type - not really used at the moment, but it is intended to
         # be used for build tasks other than the DefaultTasks - please see below:
         # At the moment the this class is only extended by default tasks
         attr_reader :download_type
@@ -163,14 +202,43 @@ class SoftwarePackage
         # pkg_state_dir: package build state directory
         attr_reader :pkg_state_dir
 
+    private
+        # All dependencies stored in an array
+        attr_reader :deps_array
+
+        # All sources stored in an array
+        attr_reader :src_array
+        # All sources prepared with root directory added
+        attr_reader :src_files_prepared
+
+        # All source-extensions replaced with the configured obj-extension
+        attr_reader :obj_files_prepared
+
+        attr_reader :inc_dir_array
+        attr_reader :inc_dirs_prepared
+        attr_reader :inc_dirs_depends_prepared
+
+        attr_reader :patches_array
+
+        def set_download_done()
+            execute "touch #{pkg_dl_state_dir}"
+        end
+
+        def set_state_done(which)
+            execute "touch #{pkg_state_dir}/#{which}"
+        end
+
+        # Extend with various modules here
         include PackageControl
+        include PackageBuildFunctions
 
     def initialize(recipe_file)
         # Extract the name of the package from the recipe name
-        @name = File.basename(recipe_file, File.extname(recipe_file))
+        @name = get_filename_without_extension_from_uri(recipe_file)
+        @version = "noversion"
         # TODO: implement appropriate way of generating a unique hash of the package
         @unique_hash = "nohash"
-        @base_dir = File.dirname(recipe_file)
+        @base_dir = get_dirname_from_uri(recipe_file)
 
         @download_type = "default"
         @prepare_type = "default"
@@ -204,15 +272,17 @@ class SoftwarePackage
 
         @deps_array = deps.split(" ")
         @src_array = srcs.split(" ")
+
         @src_files_prepared = []
         @obj_files_prepared = []
+
         @inc_dir_array = incdirs.split(" ")
         @inc_dirs_prepared = []
+        @inc_dirs_depends_prepared = []
         @patches_array = patches.split(" ")
 
         case download_type
             when "default"
-                print_debug "default download task"
                 extend DefaultDownload::DownloadPackage
             else
                 abort("Package download_type #{download_type} not known")
@@ -220,7 +290,6 @@ class SoftwarePackage
 
         case prepare_type
             when "default"
-                print_debug "default prepare task"
                 extend DefaultPrepare::PreparePackageBuildDir
             else
                 abort("Package download_type #{prepare_type} not known")
@@ -228,7 +297,6 @@ class SoftwarePackage
 
         case patch_type
             when "default"
-                print_debug "default patch task"
                 extend DefaultPatch::Patch
             else
                 abort("Package download_type #{patch_type} not known")
@@ -236,7 +304,6 @@ class SoftwarePackage
 
         case build_type
             when "default"
-                print_debug "default build task"
                 extend Default::Compile
                 extend Default::Link
                 extend Default::Image
@@ -246,7 +313,7 @@ class SoftwarePackage
             #     extend SomeOtherTasks::PreparePackageBuildDir
             #     extend SomeOtherTasks::Compile
             else
-                abort("Package build_type #{build_type} not known")
+                print_abort("Package build_type #{build_type} not known")
         end
 
         # Extend custom tasks
@@ -254,59 +321,11 @@ class SoftwarePackage
             extend custom_tasks
         end
 
-        # Extend with various modules here
-        extend PackageBuildFunctions 
+
+        # Make sanity checks here:
+        check_duplicates_exit_with_error(deps_array, "deps_array in package #{name}")
+        check_duplicates_exit_with_error(src_array, "src_array in package #{name}")
     end
-
-    def set_global_define(define)
-        global_defines.push(define)
-    end
-
-    def set_global_linker_flags(flags)
-        global_linker_flags.push(flags)
-    end
-
-    def set_src(src)
-        @srcs << string_strip(src)
-    end
-
-    def set_inc(inc)
-        @incdirs << string_strip(inc)
-    end
-
-    def set_dep(dep)
-        @deps << string_strip(dep)
-    end
-
-    def set_uri(uri)
-        @uri = string_strip(uri).strip
-    end
-
-    def set_arch(arch)
-        @arch = string_strip(arch).strip
-    end
-
-    def set_mach(mach)
-        @mach = string_strip(mach).strip
-    end
-
-    def set_def(define)
-        @defs << string_strip(define)
-    end
-
-    def set_patch(patch)
-        @patches << string_strip(patch)
-    end
-
-    def set_custom_tasks(tasks)
-        @custom_tasks = tasks
-    end
-
-    private
-
-        def string_strip(val)
-            return "#{val.gsub(/\s+/, " ").strip} "
-        end
 end
 
 # Class for associating a package name with the swpackage reference
@@ -327,7 +346,7 @@ class SoftwarePackageList
     def get_ref_by_name(name)
         result = name_list.index(name)
         if result == nil
-            return nil
+            return print_abort("ERROR: No recipe found for package #{name}!")
         else
             return ref_list[result]
         end

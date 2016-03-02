@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -32,7 +32,7 @@ module DefaultPrepare
             end
 
             def prepare_zip
-                execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri} -d #{pkg_build_dir}"
+                execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri(uri)} -d #{pkg_build_dir}"
             end
 
             def do_prepare_clean
@@ -41,7 +41,7 @@ module DefaultPrepare
             end
 
             def do_prepare_builddir
-                case File.extname(uri)
+                case get_extension_from_uri(uri)
                     when ".local"
                         print_debug "Local package"
                         prepare_copy()
@@ -52,7 +52,7 @@ module DefaultPrepare
                         print_debug "Git repo"
                         prepare_clone_git()
                     else
-                        abort('No valid URI type!')
+                        print_abort('No valid URI type!')
                 end
             end
     end

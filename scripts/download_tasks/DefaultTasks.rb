@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -39,8 +39,10 @@ module DefaultDownload
                     when ".zip"
                         print_debug "Zip package"
                         download_zip()
+                    when ".git"
+                        print_debug "git uri, nothing to download"
                     else
-                        abort('No valid URI type!')
+                        print_abort('No valid URI type!')
                 end
             end
     end

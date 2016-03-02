@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2016 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -43,16 +43,20 @@ module PackageBuildFunctions
             set_state_done("prepare")
         end
 
-        def incdir_prepare(incdirs_depend)
-            #print_debug "IncDir dependencies so far: #{incdirs_depend}"
-            incdirs_depend.each {|e| inc_dirs_prepared.push("#{e}")}
-            inc_dir_array.each {|e| inc_dirs_prepared.push("-I #{pkg_build_dir}/#{e}")}
-            @inc_dirs_prepared = inc_dirs_prepared.uniq
+        def set_dependency_incdirs(inc_dep_array)
+            inc_dirs_depends_prepared.concat(inc_dep_array)
         end
 
-        def compile_prepare
+        def incdir_prepare()
+            #@inc_dirs_prepared = inc_dirs_prepared.uniq
+            inc_dir_array.each do |e|
+                inc_dirs_prepared.push("-I #{pkg_build_dir}/#{e}")
+            end
+        end
+
+        def compile_and_link_prepare
             if src_files_prepared.empty?
-                src_array.each do |e| 
+                src_array.each do |e|
                     src_files_prepared.push("#{pkg_build_dir}/#{e}")
                     obj_files_prepared.push("#{pkg_build_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}")
                 end
@@ -108,12 +112,5 @@ module PackageBuildFunctions
             do_prepare_clean()
             do_compile_clean()
             do_link_clean()
-        end
-
-        def get_info
-            ret_string = "NAME: #{name}\n" 
-            ret_string << "build_type: #{build_type}\n"
-            ret_string << "DEPS: #{deps}\n"
-            ret_string << "URI: #{uri}\n"
         end
 end

@@ -261,7 +261,7 @@ namespace :package do
                     # At first find all *.h files:
                     header_files = []
                     pkg_ref.get_inc_dir_array.each do |e|
-                        header_files = find_files_with_ending("#{pkg_ref.get_base_dir}/#{e}".split(" "), "h")
+                        header_files.concat(find_files_with_ending("#{pkg_ref.get_base_dir}/#{e}".split(" "), "h"))
                     end
                     pkg_prepare_list.concat(header_files)
                 end

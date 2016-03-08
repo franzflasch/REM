@@ -20,14 +20,30 @@
 
 require 'open3'
 
-def find_files_with_ending(folders, ending)
+### Searches for files with ending in folderlist
+### Returns files as array
+def find_files_with_ending(folder_list, ending)
     files = []
+    folders = folder_list
+
+    # check if folder_list is array or string
+    unless folder_list.is_a?(Array)
+        folders = folder_list.split(" ")
+    end
+
     folders.each do |e|
         Find.find("#{e}") do |path|
             files << path if path =~ /.*\.#{ending}$/
         end
     end
     return files
+end
+
+### Searches for files with ending in folderlist
+### Returns files as string
+def find_files_with_ending_str(folder_list, ending)
+    list = find_files_with_ending(folder_list, ending)
+    return list.join(" ")
 end
 
 def get_duplicates_in_array(array)

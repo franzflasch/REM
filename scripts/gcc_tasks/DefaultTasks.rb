@@ -74,7 +74,6 @@ module Default
                 end
 
                 execute "#{global_config.get_compiler} #{objs_string} #{global_config.get_link_flags} -o #{pkg_deploy_dir}/#{name}.elf"
-                #set_state_done("link")
             end
     end
 

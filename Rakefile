@@ -164,6 +164,7 @@ namespace :package do
 
     # At first set the main rakefile base directory
     global_config.set_main_working_dir(Rake.original_dir)
+    global_config.set_rakefile_dir(File.dirname(__FILE__))
 
     print_any("Parsing recipes...")
     global_recipe_files = get_recipes()
@@ -261,7 +262,7 @@ namespace :package do
                     # At first find all *.h files:
                     header_files = []
                     pkg_ref.get_inc_dir_array.each do |e|
-                        header_files.concat(find_files_with_ending("#{pkg_ref.get_base_dir}/#{e}".split(" "), "h"))
+                        header_files.concat(find_files_with_ending("#{pkg_ref.get_base_dir}/#{e}", "h"))
                     end
                     pkg_prepare_list.concat(header_files)
                 end

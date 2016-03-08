@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -24,13 +24,14 @@ require_relative "./config/config"
 
 class GlobalConfig
     attr_reader :main_working_dir
+    attr_reader :rakefile_dir
 
     attr_reader :arch
     attr_reader :mach
 
     attr_reader :project_folder
 
-    attr_reader :build_dir    
+    attr_reader :build_dir
     attr_reader :state_dir
     attr_reader :deploy_dir
 
@@ -50,8 +51,9 @@ class GlobalConfig
 
     def initialize()
         @main_working_dir = ""
+        @rakefile_dir = ""
 
-        @arch = ARCH 
+        @arch = ARCH
         @mach = MACH
 
         @project_folder = PROJECT_FOLDER
@@ -75,15 +77,19 @@ class GlobalConfig
         @cc_prefix = ""
     end
 
-    # The getter methods should be considered as 'public' and 
+    # The getter methods should be considered as 'public' and
     # can be called from anywhere:
 
     def get_main_working_dir
         return main_working_dir
     end
 
+    def get_rakefile_dir
+        return rakefile_dir
+    end
+
     def get_arch
-        return arch 
+        return arch
     end
 
     def get_mach
@@ -179,6 +185,10 @@ class GlobalConfig
     # and should only be called from dedicated configure files.
     def set_main_working_dir(dir)
         @main_working_dir = dir
+    end
+
+    def set_rakefile_dir(dir)
+        @rakefile_dir = dir
     end
 
     def set_compiler_prefix(prefix)

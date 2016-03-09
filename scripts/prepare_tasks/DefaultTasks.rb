@@ -44,7 +44,6 @@ module DefaultPrepare
                 case get_extension_from_uri(uri)
                     when ".local"
                         print_debug "Local package"
-                        prepare_copy()
                     when ".zip"
                         print_debug "Zip package"
                         prepare_zip()
@@ -54,6 +53,8 @@ module DefaultPrepare
                     else
                         print_abort('No valid URI type!')
                 end
+                # files need to be copied in every case:
+                prepare_copy()
             end
     end
 end

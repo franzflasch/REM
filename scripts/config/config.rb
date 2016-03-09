@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -18,7 +18,6 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-WORKDIR = "rem_workdir"
 BASE_DIR = "#{WORKDIR}/#{ARCH}_#{MACH}"
 BUILD_DIR = "#{BASE_DIR}/build"
 DEPLOY_DIR = "#{BASE_DIR}/deploy"

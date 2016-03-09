@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -32,7 +32,7 @@ def set_input_env_default(var, default_val)
         return default_val
     else
         return ENV[var]
-    end    
+    end
 end
 
 
@@ -40,4 +40,5 @@ end
 ARCH = set_input_env("ARCH")
 MACH = set_input_env("MACH")
 PROJECT_FOLDER = set_input_env("PROJECT_FOLDER")
+WORKDIR = set_input_env_default("WORKDIR", "rem_workdir")
 VERBOSE = set_input_env_default("VERBOSE", "0")

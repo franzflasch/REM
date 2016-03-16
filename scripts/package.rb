@@ -40,34 +40,6 @@ module PackageControl
             return "#{pkg_state_dir}/#{which}"
         end
 
-        def get_incdirs_depends_prepared
-            return inc_dirs_depends_prepared
-        end
-
-        def get_incdirs_prepared
-            return inc_dirs_prepared
-        end
-
-        def get_objs
-            return obj_files_prepared
-        end
-
-        def get_global_defines
-            return global_defines
-        end
-
-        def get_global_linker_flags
-            return global_linker_flags
-        end
-
-        def get_name
-            return name
-        end
-
-        def get_version
-            return version
-        end
-
         # Returns the name as array-list
         def get_name_splitted
             return name.split
@@ -79,26 +51,6 @@ module PackageControl
 
         def get_mach
             return mach
-        end
-
-        def get_uri
-            return uri
-        end
-
-        def get_base_dir
-            return base_dir
-        end
-
-        def get_deps_array
-            return deps_array
-        end
-
-        def get_src_array
-            return src_array
-        end
-
-        def get_inc_dir_array
-            return inc_dir_array
         end
 
         def get_info
@@ -155,8 +107,8 @@ module PackageControl
             @patches << string_strip(patch)
         end
 
-        def set_custom_tasks(tasks)
-            @custom_tasks = tasks
+        def set_custom_build_string(build_str)
+            @custom_build_string = build_str
         end
 end
 
@@ -187,7 +139,7 @@ class SoftwarePackage
         attr_reader :mach
         attr_reader :global_defines
         attr_reader :global_linker_flags
-        attr_reader :custom_tasks
+        attr_reader :custom_build_string
 
         # base_dir: recipe file location
         attr_reader :base_dir
@@ -202,7 +154,6 @@ class SoftwarePackage
         # pkg_state_dir: package build state directory
         attr_reader :pkg_state_dir
 
-    private
         # All dependencies stored in an array
         attr_reader :deps_array
 
@@ -281,6 +232,21 @@ class SoftwarePackage
         @inc_dirs_depends_prepared = []
         @patches_array = patches.split(" ")
 
+        extend_build_functions()
+
+        # Extend custom tasks
+        #if !custom_tasks.nil?
+        #    extend custom_tasks
+        #end
+
+        # Make sanity checks here:
+        check_duplicates_exit_with_error(deps_array, "deps_array in package #{name}")
+        check_duplicates_exit_with_error(src_array, "src_array in package #{name}")
+    end
+
+    public
+
+    def extend_build_functions
         case download_type
             when "default"
                 extend DefaultDownload::DownloadPackage
@@ -317,21 +283,16 @@ class SoftwarePackage
         end
 
         # Extend custom tasks
-        if !custom_tasks.nil?
-            extend custom_tasks
+        if !custom_build_string.nil?
+            extend PackageCustomCompile
         end
-
-
-        # Make sanity checks here:
-        check_duplicates_exit_with_error(deps_array, "deps_array in package #{name}")
-        check_duplicates_exit_with_error(src_array, "src_array in package #{name}")
     end
 end
 
 # Class for associating a package name with the swpackage reference
 class SoftwarePackageList
-    attr_accessor :name_list
-    attr_accessor :ref_list
+    attr_reader :name_list
+    attr_reader :ref_list
 
     def initialize()
         @name_list = []
@@ -350,9 +311,5 @@ class SoftwarePackageList
         else
             return ref_list[result]
         end
-    end
-
-    def get_ref_list
-        return ref_list
     end
 end

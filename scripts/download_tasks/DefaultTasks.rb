@@ -24,7 +24,7 @@ module DefaultDownload
         private
 
             def download_zip
-                execute "wget #{uri} -P #{pkg_dl_dir}"
+                execute "wget -c #{uri} -P #{pkg_dl_dir}"
             end
 
             def do_download_clean

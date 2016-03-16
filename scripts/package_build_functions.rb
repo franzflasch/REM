@@ -18,6 +18,12 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
+module PackageCustomCompile
+    def do_compile
+        execute custom_build_string
+    end
+end
+
 module PackageBuildFunctions
 
         def download

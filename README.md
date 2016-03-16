@@ -2,12 +2,12 @@
 Rake based buildsystem for EMbedded Systems and Microcontrollers
 
 ## Prerequisites
-Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)  
-ruby (a recent version: >= version 2.2.1)  
-rake (a recent version: >= version 10.4.2)  
-unzip  
-git  
-patch  
+Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)
+ruby (a recent version: >= version 2.2.1)
+rake (a recent version: >= version 10.4.2)
+unzip
+git
+patch
 
 ## How to build a hex file of the test project suited for an avr atmega168:
 ```Shell
@@ -40,14 +40,25 @@ rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
 rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
 ```
 
-## Using the shell based wrapper script to start the build: 
+## Using the shell based wrapper script to start the build:
 REM also comes with a wrapper script, which basically calls rake -f "path/to/main/Rakefile" and allows to start the build outside of the REM base directory, if it is added to the PATH variable:
 ```Shell
 rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
 ```
 
+## It is also possible to generate a package specific "remfile", in which all infos about the package and its dependencies are stored. This should increase the speed of the whole build process, as it is not needed to reparse all recipes when starting a new build.
+```Shell
+rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:test_project:remfile_generate
+```
+
+## Clean remfile
+```Shell
+rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:remfile_clean
+```
+
+
 ## Currently supported microcontrollers (resp. eval-boards)
-AVR Atmega168  
-ST Olimex STM32H103  
-ST STM32F3 Discovery  
-ST STM32F4 Discovery  
+AVR Atmega168
+ST Olimex STM32H103
+ST STM32F3 Discovery
+ST STM32F4 Discovery

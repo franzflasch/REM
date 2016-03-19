@@ -33,7 +33,7 @@ module DefaultDownload
             end
 
             def do_download
-                case File.extname(uri)
+                case uri_type
                     when ".local"
                         print_debug "Local package nothing do download"
                     when ".zip"

@@ -41,7 +41,7 @@ module DefaultPrepare
             end
 
             def do_prepare_builddir
-                case get_extension_from_uri(uri)
+                case uri_type
                     when ".local"
                         print_debug "Local package"
                     when ".zip"

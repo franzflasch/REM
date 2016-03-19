@@ -32,8 +32,12 @@ def find_files_with_ending(folder_list, ending)
     end
 
     folders.each do |e|
-        Find.find("#{e}") do |path|
-            files << path if path =~ /.*\.#{ending}$/
+        if File.exist?("#{e}")
+            Find.find("#{e}") do |path|
+                files << path if path =~ /.*\.#{ending}$/
+            end
+        else
+            print_abort("Error: path #{e} does not exist!")
         end
     end
     return files

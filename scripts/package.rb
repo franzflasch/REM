@@ -91,6 +91,10 @@ module PackageControl
             @uri = string_strip(uri).strip
         end
 
+        def set_uri_type(type)
+            @uri_type = string_strip(type).strip
+        end
+
         def set_arch(arch)
             @arch = string_strip(arch).strip
         end
@@ -135,6 +139,7 @@ class SoftwarePackage
         attr_reader :deps
         attr_reader :defs
         attr_reader :uri
+        attr_reader :uri_type
         attr_reader :arch
         attr_reader :mach
         attr_reader :global_defines
@@ -202,6 +207,7 @@ class SoftwarePackage
         @deps = ""
         @defs = []
         @uri = "package.local"
+        @uri_type = "undefined"
         @arch = "generic"
         @mach = "generic"
         @global_defines = []
@@ -230,9 +236,7 @@ class SoftwarePackage
         @inc_dir_array = incdirs.split(" ")
         @inc_dirs_prepared = []
         @inc_dirs_depends_prepared = []
-        @patches_array = patches.split(" ")
-
-        extend_build_functions()
+        @patches_array = patches.split(" ")        
 
         # Extend custom tasks
         #if !custom_tasks.nil?
@@ -246,7 +250,11 @@ class SoftwarePackage
 
     public
 
-    def extend_build_functions
+    def post_initialize
+        if(uri_type == "undefined")
+            set_uri_type(get_extension_from_uri(uri))
+        end
+
         case download_type
             when "default"
                 extend DefaultDownload::DownloadPackage
@@ -304,10 +312,10 @@ class SoftwarePackageList
         ref_list.push(ref)
     end
 
-    def get_ref_by_name(name)
+    def get_ref_by_name(name, needed_by_info)
         result = name_list.index(name)
         if result == nil
-            return print_abort("ERROR: No recipe found for package #{name}!")
+            return print_abort("ERROR: No recipe found for package #{name}!" + " Needed by: " + needed_by_info)
         else
             return ref_list[result]
         end

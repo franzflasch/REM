@@ -342,6 +342,16 @@ namespace :package do
                 pkg_ref.incdir_prepare()
                 pkg_ref.compile_and_link_prepare()
 
+                # Check for updated header or c files
+                header_files = []
+                pkg_ref.inc_dir_array.each do |e|
+                    header_files.concat(find_files_with_ending("#{pkg_ref.pkg_build_dir}/#{e}", "h"))
+                end
+                pkg_compile_list.concat(header_files)
+
+                c_files = pkg_ref.src_array.map { |element| "#{pkg_ref.pkg_build_dir}/#{element}" }
+                pkg_compile_list.concat(c_files)
+
                 desc "#{pkg_ref.get_package_state_file("compile")}"
                 file "#{pkg_ref.get_package_state_file("compile")}" => pkg_compile_list do
                     print_any_green "Compiling #{pkg_ref.name}..."

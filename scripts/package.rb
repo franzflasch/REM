@@ -114,6 +114,11 @@ module PackageControl
         def set_custom_build_string(build_str)
             @custom_build_string = build_str
         end
+
+        def set_work_dir(workdir_str)
+            tmp_str = string_strip(workdir_str).strip
+            @pkg_work_dir =  "#{pkg_build_dir}/#{tmp_str}"
+        end
 end
 
 # This is only used for the recipes
@@ -152,8 +157,10 @@ class SoftwarePackage
         attr_reader :pkg_dl_dir
         # pkg_dl_state_dir: download state file location
         attr_reader :pkg_dl_state_dir
-        # pkg_build_dir: build working directory
+        # pkg_build_dir: build directory
         attr_reader :pkg_build_dir
+        # pkg_work_dir: work directory
+        attr_reader :pkg_work_dir
         # pkg_deploy_dir: output binary deploy directory
         attr_reader :pkg_deploy_dir
         # pkg_state_dir: package build state directory
@@ -216,6 +223,7 @@ class SoftwarePackage
         @pkg_dl_dir = "#{global_config.get_dl_dir()}/#{name}_#{unique_hash}"
         @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}/#{name}_#{unique_hash}"
         @pkg_build_dir = "#{global_config.get_build_dir()}/#{name}_#{unique_hash}"
+        @pkg_work_dir = pkg_build_dir
         @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}_#{unique_hash}"
         @pkg_state_dir = "#{global_config.get_state_dir()}/#{name}_#{unique_hash}"
 

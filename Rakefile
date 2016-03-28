@@ -345,11 +345,11 @@ namespace :package do
                 # Check for updated header or c files
                 header_files = []
                 pkg_ref.inc_dir_array.each do |e|
-                    header_files.concat(find_files_with_ending("#{pkg_ref.pkg_build_dir}/#{e}", "h"))
+                    header_files.concat(find_files_with_ending("#{pkg_ref.pkg_work_dir}/#{e}", "h"))
                 end
                 pkg_compile_list.concat(header_files)
 
-                c_files = pkg_ref.src_array.map { |element| "#{pkg_ref.pkg_build_dir}/#{element}" }
+                c_files = pkg_ref.src_array.map { |element| "#{pkg_ref.pkg_work_dir}/#{element}" }
                 pkg_compile_list.concat(c_files)
 
                 desc "#{pkg_ref.get_package_state_file("compile")}"

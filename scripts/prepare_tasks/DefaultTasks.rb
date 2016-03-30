@@ -29,6 +29,9 @@ module DefaultPrepare
 
             def prepare_clone_git
                 execute "git clone #{uri} #{pkg_build_dir}"
+                if(uri_src_rev != "undefined")
+                    execute "git --git-dir=#{pkg_build_dir}/.git --work-tree=#{pkg_build_dir} checkout #{uri_src_rev}"
+                end
             end
 
             def prepare_zip
@@ -42,12 +45,12 @@ module DefaultPrepare
 
             def do_prepare_builddir
                 case uri_type
-                    when ".local"
+                    when "local"
                         print_debug "Local package"
-                    when ".zip"
+                    when "zip"
                         print_debug "Zip package"
                         prepare_zip()
-                    when ".git"
+                    when "git"
                         print_debug "Git repo"
                         prepare_clone_git()
                     else

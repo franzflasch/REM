@@ -296,7 +296,7 @@ namespace :package do
                 pkg_prepare_list = package_add_common_task_dep_list(package_list, tasks_common, FILE_TASK, pkg_ref.name)
 
                 # Add source file dependencies and include folders
-                if pkg_ref.uri_type == ".local"
+                if pkg_ref.uri_type == "local"
                     pkg_ref.src_array.each do |e|
                         pkg_prepare_list.push("#{pkg_ref.base_dir}/#{e}")
                     end

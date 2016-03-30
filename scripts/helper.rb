@@ -108,5 +108,8 @@ end
 
 ### Returns the file extension from the given uri
 def get_extension_from_uri(uri)
-    return File.extname(uri)
+    tmp = File.extname(uri)
+    # return the "."
+    tmp.slice!(0)
+    return tmp
 end

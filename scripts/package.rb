@@ -19,6 +19,7 @@
 =end
 
 require_relative "package_build_functions"
+require_relative "helper_string_parse"
 
 # # This is used for packages to temporarily store the package info in a global variable
 # # this is just used for easier handling when defining recipes
@@ -91,10 +92,6 @@ module PackageControl
             @uri = string_strip(uri).strip
         end
 
-        def set_uri_type(type)
-            @uri_type = string_strip(type).strip
-        end
-
         def set_arch(arch)
             @arch = string_strip(arch).strip
         end
@@ -143,8 +140,11 @@ class SoftwarePackage
         attr_reader :patches
         attr_reader :deps
         attr_reader :defs
+
         attr_reader :uri
         attr_reader :uri_type
+        attr_reader :uri_src_rev
+
         attr_reader :arch
         attr_reader :mach
         attr_reader :global_defines
@@ -213,8 +213,11 @@ class SoftwarePackage
         @patches = ""
         @deps = ""
         @defs = []
+
         @uri = "package.local"
         @uri_type = "undefined"
+        @uri_src_rev = "undefined"
+
         @arch = "generic"
         @mach = "generic"
         @global_defines = []
@@ -244,12 +247,15 @@ class SoftwarePackage
         @inc_dir_array = incdirs.split(" ")
         @inc_dirs_prepared = []
         @inc_dirs_depends_prepared = []
-        @patches_array = patches.split(" ")        
+        @patches_array = patches.split(" ")
 
-        # Extend custom tasks
-        #if !custom_tasks.nil?
-        #    extend custom_tasks
-        #end
+        # set uri type:
+        tmp_uri_arr = uri
+        @uri = uri.split(";")[0]
+        if((@uri_type = parse_string(tmp_uri_arr, "type=")) == "undefined")
+            @uri_type = get_extension_from_uri(uri)
+        end
+        @uri_src_rev = parse_string(tmp_uri_arr, "src_rev=")
 
         # Make sanity checks here:
         check_duplicates_exit_with_error(deps_array, "deps_array in package #{name}")
@@ -259,9 +265,6 @@ class SoftwarePackage
     public
 
     def post_initialize
-        if(uri_type == "undefined")
-            set_uri_type(get_extension_from_uri(uri))
-        end
 
         case download_type
             when "default"

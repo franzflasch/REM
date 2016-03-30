@@ -34,12 +34,12 @@ module DefaultDownload
 
             def do_download
                 case uri_type
-                    when ".local"
+                    when "local"
                         print_debug "Local package nothing do download"
-                    when ".zip"
+                    when "zip"
                         print_debug "Zip package"
                         download_zip()
-                    when ".git"
+                    when "git"
                         print_debug "git uri, nothing to download"
                     else
                         print_abort('No valid URI type!')

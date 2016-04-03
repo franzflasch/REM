@@ -431,7 +431,7 @@ namespace :package do
                     when "download"
                         pkg.clean_download()
                     when "prepare"
-                        pkg.cleanprepare()
+                        pkg.clean_prepare()
                     when "compile"
                         pkg.clean_compile()
                     when "link"

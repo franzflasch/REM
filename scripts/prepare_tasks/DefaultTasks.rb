@@ -34,6 +34,13 @@ module DefaultPrepare
                 end
             end
 
+            def prepare_checkout_svn
+                execute "svn co #{uri} #{pkg_build_dir}"
+                if(uri_src_rev != "undefined")
+                    # TODO: add possibilty to checkout specific revision
+                end
+            end
+
             def prepare_zip
                 execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri(uri)} -d #{pkg_build_dir}"
             end
@@ -46,13 +53,16 @@ module DefaultPrepare
             def do_prepare_builddir
                 case uri_type
                     when "local"
-                        print_debug "Local package"
+                        print_debug "LOCAL package"
                     when "zip"
-                        print_debug "Zip package"
+                        print_debug "ZIP package"
                         prepare_zip()
                     when "git"
-                        print_debug "Git repo"
+                        print_debug "GIT repo"
                         prepare_clone_git()
+                    when "svn"
+                        print_debug "SVN repo"
+                        prepare_checkout_svn()
                     else
                         print_abort('No valid URI type!')
                 end

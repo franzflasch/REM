@@ -5,6 +5,7 @@ Rake based buildsystem for EMbedded Systems and Microcontrollers
 Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)
 ruby (a recent version: >= version 2.2.1)
 rake (a recent version: >= version 10.4.2)
+simplecov (if you want to use codecoverage tool)
 unzip
 git
 patch
@@ -56,6 +57,11 @@ rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir 
 rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:remfile_clean
 ```
 
+## simplecov code coverage - check the codecoverage of the rem buildsystem itself
+```Shell
+rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:test_project:image[bin] SIMPLECOV=1
+```
+The output will be placed in a folder called 'coverage'
 
 ## Currently supported microcontrollers (resp. eval-boards)
 AVR Atmega168

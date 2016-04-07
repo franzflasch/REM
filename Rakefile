@@ -21,6 +21,13 @@
 # Global Config
 require_relative "scripts/global_config"
 
+if(SIMPLECOV == "1")
+    require 'simplecov'
+    SimpleCov.command_name "rem codecoverage"
+    SimpleCov.start
+end
+
+
 # Machine and compiler specific
 require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
 require_relative "scripts/#{global_config.compiler}_tasks/DefaultTasks"

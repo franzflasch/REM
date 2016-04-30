@@ -42,6 +42,7 @@ require_relative "scripts/helper"
 require_relative "scripts/print_functions"
 require_relative "scripts/package"
 require_relative "scripts/remfile_gen"
+require_relative "scripts/dependency_graph"
 
 require "find"
 require "fileutils"
@@ -223,6 +224,21 @@ namespace :package do
                         print_any_green("#{dep_ref.name} --> " + tmp_string)
                     end
                 end
+            end
+
+            desc "depends_chain_graph"
+            task :depends_chain_graph => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
+                print_any_green("Generating dependency graph for #{pkg.name}")
+                dep_graph = DependencyGraph.new(pkg.name)
+                global_dep_chain.each do |dep|
+                    dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
+                    dep_graph.add_node("#{dep_ref.name}")
+
+                    dep_ref.deps_array.each do |e|
+                        dep_graph.add_dep("#{dep_ref.name}", "#{e}")
+                    end
+                end
+                dep_graph.draw()
             end
 
             desc "depends_chain_print_pkg_info"

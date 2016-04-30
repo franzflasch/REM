@@ -270,21 +270,21 @@ class SoftwarePackage
             when "default"
                 extend DefaultDownload::DownloadPackage
             else
-                abort("Package download_type #{download_type} not known")
+                print_abort("Package download_type #{download_type} not known")
         end
 
         case prepare_type
             when "default"
                 extend DefaultPrepare::PreparePackageBuildDir
             else
-                abort("Package download_type #{prepare_type} not known")
+                print_abort("Package download_type #{prepare_type} not known")
         end
 
         case patch_type
             when "default"
                 extend DefaultPatch::Patch
             else
-                abort("Package download_type #{patch_type} not known")
+                print_abort("Package download_type #{patch_type} not known")
         end
 
         case build_type

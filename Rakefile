@@ -295,10 +295,10 @@ namespace :package do
 
             def create_download_file_task(pkg_ref, package_list, tasks_common)
 
-                file "#{pkg_ref.get_download_state_file()}" do
-                    # As this is the first task in the chain create work directories here:
-                    Rake::Task["package:create_workdir"].invoke()
+                # As this is the first task in the chain create work directories here:
+                Rake::Task["package:create_workdir"].invoke()
 
+                file "#{pkg_ref.get_download_state_file()}" do
                     print_any_green "Downloading #{pkg_ref.name}..."
                     pkg_ref.download()
                 end

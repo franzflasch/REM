@@ -55,14 +55,14 @@ module PackageBuildFunctions
 
         def incdir_prepare()
             #@inc_dirs_prepared = inc_dirs_prepared.uniq
-            inc_dir_array.each do |e|
+            incdirs.each do |e|
                 inc_dirs_prepared.push("-I #{pkg_work_dir}/#{e}")
             end
         end
 
         def compile_and_link_prepare
             if src_files_prepared.empty?
-                src_array.each do |e|
+                srcs.each do |e|
                     src_files_prepared.push("#{pkg_work_dir}/#{e}")
                     obj_files_prepared.push("#{pkg_work_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}")
                 end

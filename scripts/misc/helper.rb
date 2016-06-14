@@ -85,6 +85,13 @@ def string_strip(val)
     return "#{val.gsub(/\s+/, " ").strip} "
 end
 
+### Does the same as string_strip plus converts it to an array
+def string_strip_to_array(val)
+    tmp = string_strip(val)
+    tmp = tmp.split(" ")
+    return tmp
+end
+
 ### Cuts the directory and the extension from the given uri
 def get_filename_without_extension_from_uri(uri)
     #return File.basename(uri, extension)

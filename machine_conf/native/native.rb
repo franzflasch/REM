@@ -18,7 +18,7 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-global_config.set_compiler_prefix("arm-none-eabi")
+#global_config.set_compiler_prefix("arm-none-eabi")
 global_config.set_compiler("gcc")
 global_config.set_obj_cp("objcopy")
 global_config.set_compile_flag("-Wall -Werror")

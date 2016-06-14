@@ -1,5 +1,5 @@
 =begin
-
+    
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -18,7 +18,7 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-global_config.set_compiler_prefix("arm-none-eabi")
-global_config.set_compiler("gcc")
-global_config.set_obj_cp("objcopy")
-global_config.set_compile_flag("-Wall -Werror")
+require_relative './native'
+
+global_config.set_compile_flag("-Os -g -fno-common -ffunction-sections -fdata-sections")
+global_config.set_link_flag("--static -Wl,--gc-sections")

@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -25,9 +25,9 @@ module DefaultPatch
 
             def do_patch
                 main_working_dir = global_config.get_main_working_dir
-                patches_array.each do |e|
+                patches.each do |e|
                     execute "patch -d #{pkg_work_dir} -i #{main_working_dir}/#{base_dir}/#{e} -p1 -t"
-                end                
+                end
             end
     end
 end

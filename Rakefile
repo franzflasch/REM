@@ -19,7 +19,7 @@
 =end
 
 # Global Config
-require_relative "scripts/global_config"
+require_relative "scripts/global_config/global_config"
 
 if(SIMPLECOV == "1")
     require 'simplecov'
@@ -38,152 +38,30 @@ require_relative "scripts/prepare_tasks/DefaultTasks"
 require_relative "scripts/patch_tasks/DefaultTasks"
 
 # Generic
-require_relative "scripts/helper"
-require_relative "scripts/print_functions"
+require_relative "scripts/misc/helper"
+require_relative "scripts/misc/print_functions"
 require_relative "scripts/package"
-require_relative "scripts/remfile_gen"
-require_relative "scripts/dependency_graph"
+require_relative "scripts/dependency_functions/dependency_tasks"
+require_relative "scripts/dependency_functions/dependency_graph"
+require_relative "scripts/remfile_functions/remfile_gen"
+require_relative "scripts/recipe_handling/recipes"
 
 require "find"
 require "fileutils"
 require 'digest'
 
+def create_workdir
+    FileUtils.mkdir_p(BUILD_DIR)
+    FileUtils.mkdir_p(DL_DIR)
+    FileUtils.mkdir_p(DL_STATE_DIR)
+end
+
 # Main:
 namespace :package do
 
-    NON_FILE_TASK = 0
-    FILE_TASK = 1
-
-    global_recipe_files = []
+    # 'global' variables used across tasks:
     global_package_list = []
-
-    def get_recipes
-        project_folders = "#{global_config.get_project_folder()}".split(" ")
-        files = []
-        files = find_files_with_ending(project_folders, "rem")
-
-        if files.empty?
-            print_abort ("No recipes found!")
-        end
-
-        print_debug("Found the following recipes:")
-        print_debug(files)
-        print_debug("")
-
-        return files
-    end
-
-    def create_workdir
-        FileUtils.mkdir_p(BUILD_DIR)
-        FileUtils.mkdir_p(DL_DIR)
-        FileUtils.mkdir_p(DL_STATE_DIR)
-    end
-
-    def parse_recipe_file_and_fill_package_info(recipe_file)
-        cur_pkg = SoftwarePackage.new(recipe_file)
-        return cur_pkg
-    end
-
-    def prepare_recipes(recipes)
-        recipe_filenames = []
-        pkgs = []
-
-        print_debug "Searching for recipes..."
-
-        # Remove directory from all recipes - this is needed to check for duplicates
-        recipes.each {|e| recipe_filenames.push(get_filename_from_uri(e))}
-
-        check_duplicates_exit_with_error(recipe_filenames, "recipes")
-
-        recipes.each do |r|
-
-            print_debug "parsing recipe #{r}:"
-
-            # Parse and include submakefiles
-            cur_pkg = parse_recipe_file_and_fill_package_info(r)
-
-            # Filter out packages which do not match arch or mach config
-            arch_config = cur_pkg.arch
-            mach_config = cur_pkg.mach
-
-            if ( (arch_config == "generic") and  (mach_config == "generic") )
-                pkgs.push(cur_pkg)
-            elsif ( (arch_config == "#{global_config.arch}") and  (mach_config == "generic") )
-                pkgs.push(cur_pkg)
-            elsif( (arch_config == "generic") and  (mach_config != "generic") )
-                print_abort "Invalid ARCH-MACH Combination: arch:#{cur_pkg.arch} mach:#{cur_pkg.mach}"
-            elsif( arch_config != "#{global_config.arch}" )
-                print_debug "ARCH Config: #{arch_config} does not match - current arch config: #{global_config.arch}, skipping recipe: #{r}"
-            elsif ( mach_config != "#{global_config.mach}" )
-                print_debug "MACH Config: #{mach_config} does not match - current mach config: #{global_config.mach}, skipping recipe: #{r}"
-            else
-                pkgs.push(cur_pkg)
-            end
-        end
-
-        return prepare_pkg_list(pkgs)
-    end
-
-    def prepare_pkg_list(pkgs)
-        package_ref_list = SoftwarePackageList.new()
-
-        print_debug "Preparing pkgs..."
-        pkgs.each do |pkg|
-            # We need to extend all build functions here, as they're not
-            # restored when loading the yaml file
-            pkg.post_initialize()
-            print_debug "parsing pkg #{pkg.name}:"
-            package_ref_list.append("#{pkg.name}", pkg)
-        end
-        return package_ref_list
-    end
-
-    def package_add_non_file_task_dep(package_list, dependency_list, which, pkg_name)
-        dep_str_array = []
-        dependency_list.each do |dep|
-            dep_ref = package_list.get_ref_by_name(dep, pkg_name)
-            dep_str_array.push("package:#{dep_ref.name}:#{which}")
-        end
-        return dep_str_array
-    end
-
-    def package_add_file_task_dep(package_list, dependency_list, which, pkg_name)
-        dep_str_array = []
-        dependency_list.each do |dep|
-            dep_ref = package_list.get_ref_by_name(dep, pkg_name)
-            case which
-                when "download"
-                        dep_str_array.push("#{dep_ref.get_download_state_file()}")
-                else
-                        dep_str_array.push("#{dep_ref.get_package_state_file("#{which}")}")
-            end
-        end
-        return dep_str_array
-    end
-
-    # Generates a list of dependencies
-    # input has to be composed like this
-    # package_list - list of package references
-    # task_list - [ pkg.deps_array, "compile", pkg.get_name_splitted, "prepare"] # Every second entry is the dependency array, Every second+1 entry is the "which" entry
-    # file_task - specifies if the output dependencies shall be file tasks or non file tasks
-    def package_add_common_task_dep_list(package_list, task_list, file_task, pkg_name)
-        dep_str_array = []
-        # At first get the number of tasks
-        task_count = ((task_list.length/2)-1)
-        (0..task_count).step(1) do |i|
-            # Every second entry is the dependency list
-            deps_array = task_list[(i*2)]
-            which = task_list[(i*2)+1]
-            if(file_task == 1)
-                dep_str_array.concat(package_add_file_task_dep(package_list, deps_array, which, pkg_name))
-            else
-                dep_str_array.concat(package_add_non_file_task_dep(package_list, deps_array, which, pkg_name))
-            end
-        end
-        return dep_str_array
-    end
-
-    #### Behaviour begin: ####
+    global_dep_chain = []
 
     # At first set the main rakefile base directory
     global_config.set_main_working_dir(Rake.original_dir)
@@ -195,18 +73,34 @@ namespace :package do
         global_package_list = prepare_pkg_list(temp_pkgs)
     else
         print_any("Parsing recipes...")
-        global_recipe_files = get_recipes()
-        global_package_list = prepare_recipes(global_recipe_files)
-    end
+        rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
+        if rem_recipes == nil
+            print_abort ("No recipes found!")
+        end
 
-    # 'global' variables used across tasks:
-    global_dep_chain = []
+        temp_pkgs = prepare_recipes(rem_recipes)
+        temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
+        tmp_pkg_list = prepare_pkg_list(temp_pkgs)
+
+        #temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
+
+        remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
+        if remappend_recipes != nil
+            temp_pkgs_append = prepare_recipes(remappend_recipes, true)
+            tmp_pkg_list_append = prepare_pkg_list(temp_pkgs_append)
+            merge_recipes_append(tmp_pkg_list, tmp_pkg_list_append)
+            #temp_pkgs_append = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
+        end
+
+        # Now filter out unsuited recipes
+        global_package_list = tmp_pkg_list
+    end
 
     global_package_list.ref_list.each do |pkg|
 
         namespace :"#{pkg.name}" do
 
-            task :get_dep_chain => package_add_non_file_task_dep(global_package_list, pkg.deps_array, "get_dep_chain", pkg.name) do
+            task :get_dep_chain => package_add_non_file_task_dep(global_package_list, pkg.deps, "get_dep_chain", pkg.name) do
                 global_dep_chain.push("#{pkg.name}")
             end
 
@@ -215,7 +109,7 @@ namespace :package do
                 global_dep_chain.each do |dep|
                     dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
                     tmp_string = ""
-                    dep_ref.deps_array.each do |e|
+                    dep_ref.deps.each do |e|
                         tmp_string << "#{e} "
                     end
                     if tmp_string.to_s == ""
@@ -234,7 +128,7 @@ namespace :package do
                     dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
                     dep_graph.add_node("#{dep_ref.name}")
 
-                    dep_ref.deps_array.each do |e|
+                    dep_ref.deps.each do |e|
                         dep_graph.add_dep("#{dep_ref.name}", "#{e}")
                     end
                 end
@@ -320,13 +214,13 @@ namespace :package do
 
                 # Add source file dependencies and include folders
                 if pkg_ref.uri_type == "local"
-                    pkg_ref.src_array.each do |e|
+                    pkg_ref.srcs.each do |e|
                         pkg_prepare_list.push("#{pkg_ref.base_dir}/#{e}")
                     end
 
                     # At first find all *.h files:
                     header_files = []
-                    pkg_ref.inc_dir_array.each do |e|
+                    pkg_ref.incdirs.each do |e|
                         header_files.concat(find_files_with_ending("#{pkg_ref.base_dir}/#{e}", "h"))
                     end
                     pkg_prepare_list.concat(header_files)
@@ -349,14 +243,14 @@ namespace :package do
 
 
 
-            compile_tasks_common = [ pkg.deps_array, "compile", pkg.get_name_splitted, "prepare" ]
+            compile_tasks_common = [ pkg.deps, "compile", pkg.get_name_splitted, "prepare" ]
             def create_compile_file_task(pkg_ref, package_list, tasks_common)
 
                 pkg_compile_list = package_add_common_task_dep_list(package_list, tasks_common, FILE_TASK, pkg_ref.name)
 
                 # Prepare include directories of the dependencies
                 dep_inc_array = []
-                pkg_ref.deps_array.each do |dep|
+                pkg_ref.deps.each do |dep|
                     dep_ref = package_list.get_ref_by_name(dep, pkg_ref.name)
                     dep_inc_array.concat(dep_ref.inc_dirs_prepared)
                 end
@@ -367,12 +261,12 @@ namespace :package do
 
                 # Check for updated header or c files
                 header_files = []
-                pkg_ref.inc_dir_array.each do |e|
+                pkg_ref.incdirs.each do |e|
                     header_files.concat(find_files_with_ending("#{pkg_ref.pkg_work_dir}/#{e}", "h"))
                 end
                 pkg_compile_list.concat(header_files)
 
-                c_files = pkg_ref.src_array.map { |element| "#{pkg_ref.pkg_work_dir}/#{element}" }
+                c_files = pkg_ref.srcs.map { |element| "#{pkg_ref.pkg_work_dir}/#{element}" }
                 pkg_compile_list.concat(c_files)
 
                 desc "#{pkg_ref.get_package_state_file("compile")}"
@@ -386,7 +280,7 @@ namespace :package do
             # of the dependency chain before we start with any of the upcoming compile tasks.
             # It's a pity that it's not possible to integrate this in create_compile_file_task(),
             # however I haven't found any other solution to this problem yet.
-            task :compile_globals_prepare => package_add_non_file_task_dep(global_package_list, pkg.deps_array, "compile_globals_prepare", pkg.name) do
+            task :compile_globals_prepare => package_add_non_file_task_dep(global_package_list, pkg.deps, "compile_globals_prepare", pkg.name) do
                 # set global defines
                 pkg.global_defines.each do |e|
                     global_config.set_define("#{e}")

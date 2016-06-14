@@ -18,8 +18,8 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-require_relative "./config/check_env"
-require_relative "./config/config"
+require_relative "./config_helper/check_env"
+require_relative "./config_helper/config"
 
 
 class GlobalConfig

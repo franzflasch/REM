@@ -25,8 +25,6 @@ begin
         $dep_graph_support = 0
 end
 
-require_relative "print_functions"
-
 class DependencyGraph
     attr_reader :dependency_graph
     attr_reader :node_list

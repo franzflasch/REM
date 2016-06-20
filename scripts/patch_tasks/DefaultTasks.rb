@@ -26,7 +26,7 @@ module DefaultPatch
             def do_patch
                 main_working_dir = global_config.get_main_working_dir
                 patches.each do |e|
-                    execute "patch -d #{pkg_work_dir} -i #{main_working_dir}/#{base_dir}/#{e} -p1 -t"
+                    execute "patch -d #{pkg_work_dir} -i #{pkg_work_dir}/#{e} -p1 -t"
                 end
             end
     end

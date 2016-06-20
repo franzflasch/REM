@@ -24,7 +24,9 @@ module DefaultPrepare
         private
 
             def prepare_copy
-                FileUtils.cp_r("#{base_dir}/.", pkg_build_dir, {:verbose => false})
+                base_dir.each do |dir|
+                    FileUtils.cp_r("#{dir}/.", pkg_build_dir, {:verbose => false})
+                end
             end
 
             def prepare_clone_git

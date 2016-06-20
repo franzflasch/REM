@@ -77,33 +77,33 @@ end
 def merge_recipes_append(recipe_list, append_recipe_list)
 
     append_recipe_list.ref_list.each do |append_pkg|
-        print_any_red(append_pkg.name)
+        print_any_yellow(append_pkg.name)
         tmp_pkg = recipe_list.get_ref_by_name(append_pkg.name)
 
         if tmp_pkg == nil
-            print_any_red("Could not find matching base recipe for append recipe " + append_pkg.name)
+            print_any_yellow("Could not find matching base recipe for append recipe " + append_pkg.name)
         else
-            print_any_red(tmp_pkg.name)
+            print_any_yellow(tmp_pkg.name)
             # Iterate and set instance variables:
             append_pkg.instance_variables.each do |var|
                 # print(var)
                 # #cur_pkg.instance_variable_set(var, 'foobar')
                 # print("\n")
-                # print(append_pkg.instance_variable_get(var).inspect)
+                print_any_yellow(append_pkg.instance_variable_get(var).inspect)
                 # print("\n")
 
                 # At the moment only array types will get appended
                 if tmp_pkg.instance_variable_get(var).kind_of?(Array)
                     val_to_append = append_pkg.instance_variable_get(var)
                     tmp_pkg.instance_variable_get(var).concat(val_to_append)
-                    print_any_red("Appending #{var} #{val_to_append} to recipe #{tmp_pkg.name}")
-                        print(tmp_pkg.instance_variable_get(var.to_s))
+                    print_any_yellow("Appending #{var} #{val_to_append} to recipe #{tmp_pkg.name}")
+                    print_any_yellow(tmp_pkg.instance_variable_get(var.to_s))
                 end
             end
         end
     end
 
-    print_any_red("Merging append recipes done.")
+    print_any_yellow("Merging append recipes done.")
 end
 
 def filter_packages(pkg_list, current_arch_config, current_mach_config)

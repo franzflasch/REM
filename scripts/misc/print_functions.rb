@@ -28,6 +28,11 @@ def print_any_green(text)
     puts "\033[32m#{text}\033[0m\n"
 end
 
+def print_any_yellow(text)
+    # will produce yellow text color
+    puts "\033[33m#{text}\033[0m\n"
+end
+
 def print_any_red(text)
     # will produce red text color
     puts "\033[31m#{text}\033[0m\n"

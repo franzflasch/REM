@@ -140,20 +140,15 @@ module PackageDescriptor
         end
 
     private
-
         def default_setup_identifiers(recipe_file)
             # Extract the name of the package from the recipe name
             set_name(get_filename_without_extension_from_uri(recipe_file))
             set_unique_hash("nohash")
+
+            (@base_dir||= []).push(get_dirname_from_uri(recipe_file))
         end        
 
         def default_setup_settables(recipe_file)
-
-            # Extract the name of the package from the recipe name
-            set_name(get_filename_without_extension_from_uri(recipe_file))
-            set_unique_hash("nohash")
-
-            @base_dir = get_dirname_from_uri(recipe_file)
             @pkg_dl_dir = "#{global_config.get_dl_dir()}/#{name}_#{unique_hash}"
             @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}/#{name}_#{unique_hash}"
             @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}_#{unique_hash}"

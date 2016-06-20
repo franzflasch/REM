@@ -213,15 +213,36 @@ namespace :package do
                 pkg_prepare_list = package_add_common_task_dep_list(package_list, tasks_common, FILE_TASK, pkg_ref.name)
 
                 # Add source file dependencies and include folders
+                # This is quite hacky, but the best solution so far:
                 if pkg_ref.uri_type == "local"
                     pkg_ref.srcs.each do |e|
-                        pkg_prepare_list.push("#{pkg_ref.base_dir}/#{e}")
+                        found = 0
+                        pkg_ref.base_dir.each do |dir|
+                            if File.exist?("#{dir}/#{e}")
+                                pkg_prepare_list.push("#{dir}/#{e}")
+                                found = 1
+                                break
+                            end
+                        end
+                        if found != 1
+                            print_abort("Could not find file #{e} in the following dirs #{pkg_ref.base_dir}")
+                        end
                     end
 
                     # At first find all *.h files:
                     header_files = []
                     pkg_ref.incdirs.each do |e|
-                        header_files.concat(find_files_with_ending("#{pkg_ref.base_dir}/#{e}", "h"))
+                        found = 0
+                        pkg_ref.base_dir.each do |dir|
+                            if File.exist?("#{dir}/#{e}")
+                                header_files.concat(find_files_with_ending("#{dir}/#{e}", "h"))
+                                found = 1
+                                break
+                            end
+                        end
+                        if found != 1
+                            print_abort("Could not find path #{e} in the following dirs #{pkg_ref.base_dir}")
+                        end
                     end
                     pkg_prepare_list.concat(header_files)
                 end

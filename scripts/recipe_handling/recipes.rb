@@ -76,9 +76,9 @@ end
 
 def merge_recipes_append(recipe_list, append_recipe_list)
 
-    append_recipe_list.ref_list.each do |append_pkg|
+    append_recipe_list.each do |append_pkg|
         print_any_yellow(append_pkg.name)
-        tmp_pkg = recipe_list.get_ref_by_name(append_pkg.name)
+        tmp_pkg = pkg_get_ref_by_name(recipe_list, append_pkg.name)
 
         if tmp_pkg == nil
             print_any_yellow("Could not find matching base recipe for append recipe " + append_pkg.name)
@@ -134,16 +134,22 @@ def filter_packages(pkg_list, current_arch_config, current_mach_config)
     return tmp_pkg_list
 end
 
-def prepare_pkg_list(pkg_list)
-    package_ref_list = SoftwarePackageList.new()
+def pkg_get_ref_by_name(pkg_list, name, needed_by_info=nil)
 
-    print_debug "Preparing pkgs..."
-    pkg_list.each do |pkg|
-        # We need to extend all build functions here, as they're not
-        # restored when loading the yaml file
-        pkg.post_initialize()
-        print_debug "parsing pkg #{pkg.name}:"
-        package_ref_list.append("#{pkg.name}", pkg)
+    # find via index:
+    #result = ref_list.index{ |item| item.name == name }
+    #return ref_list[result]
+
+    # find directly:
+    result = pkg_list.find{ |item| item.name == name }
+
+    if result == nil
+        if needed_by_info != nil
+            return print_abort("ERROR: No recipe found for package #{name}!" + " Needed by: " + needed_by_info)
+        else
+            return nil
+        end
+    else
+        return result
     end
-    return package_ref_list
 end

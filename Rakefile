@@ -70,7 +70,9 @@ namespace :package do
     # Check if a rem_file was already generated
     if File.exist?(global_config.get_remfile())
         temp_pkgs = yaml_parse(global_config.get_remfile())
-        global_package_list = prepare_pkg_list(temp_pkgs)
+        # We need to extend all build functions here, as they're not
+        # restored when loading the yaml file
+        temp_pkgs.each { |pkg| pkg.post_initialize() }
     else
         print_any("Parsing recipes...")
         rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
@@ -80,23 +82,20 @@ namespace :package do
 
         temp_pkgs = prepare_recipes(rem_recipes)
         temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
-        tmp_pkg_list = prepare_pkg_list(temp_pkgs)
-
-        #temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
+        temp_pkgs.each { |pkg| pkg.post_initialize() }
 
         remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
         if remappend_recipes != nil
             temp_pkgs_append = prepare_recipes(remappend_recipes, true)
-            tmp_pkg_list_append = prepare_pkg_list(temp_pkgs_append)
-            merge_recipes_append(tmp_pkg_list, tmp_pkg_list_append)
+            merge_recipes_append(temp_pkgs, temp_pkgs_append)
             #temp_pkgs_append = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
         end
 
         # Now filter out unsuited recipes
-        global_package_list = tmp_pkg_list
+        global_package_list = temp_pkgs
     end
 
-    global_package_list.ref_list.each do |pkg|
+    global_package_list.each do |pkg|
 
         namespace :"#{pkg.name}" do
 
@@ -107,7 +106,7 @@ namespace :package do
             desc "depends_chain_print"
             task :depends_chain_print => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
                 global_dep_chain.each do |dep|
-                    dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
+                    dep_ref = pkg_get_ref_by_name(global_package_list, dep, pkg.name)
                     tmp_string = ""
                     dep_ref.deps.each do |e|
                         tmp_string << "#{e} "
@@ -125,7 +124,7 @@ namespace :package do
                 print_any_green("Generating dependency graph for #{pkg.name}")
                 dep_graph = DependencyGraph.new(pkg.name)
                 global_dep_chain.each do |dep|
-                    dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
+                    dep_ref = pkg_get_ref_by_name(global_package_list, dep, pkg.name)
                     dep_graph.add_node("#{dep_ref.name}")
 
                     dep_ref.deps.each do |e|
@@ -135,22 +134,13 @@ namespace :package do
                 dep_graph.draw()
             end
 
-            desc "depends_chain_print_pkg_info"
-            task :depends_chain_print_pkg_info => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
-                # Do some verbose output
-                global_dep_chain.each do |dep|
-                    dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
-                    print_any_green "#{dep_ref.get_info}"
-                end
-            end
-
             desc "depends_chain_print_version_hash"
             task :depends_chain_print_version_hash, [:what] => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do |t, args|
                 # Do some verbose output
                 version_string = ""
                 hash = 0
                 global_dep_chain.each do |dep|
-                    dep_ref = global_package_list.get_ref_by_name(dep, pkg.name)
+                    dep_ref = pkg_get_ref_by_name(global_package_list, dep, pkg.name)
                     version_string << "#{dep_ref.version}"
                 end
                 case args[:what]
@@ -171,7 +161,7 @@ namespace :package do
                 file remfile do
                     dep_ref_array = []
                     dep_chain.each do |dep|
-                        dep_ref = package_list.get_ref_by_name(dep, pkg_ref.name)
+                        dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
                         dep_ref_array.push(dep_ref)
                         print_any_green("Writing #{dep_ref.name}")
                     end
@@ -272,7 +262,7 @@ namespace :package do
                 # Prepare include directories of the dependencies
                 dep_inc_array = []
                 pkg_ref.deps.each do |dep|
-                    dep_ref = package_list.get_ref_by_name(dep, pkg_ref.name)
+                    dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
                     dep_inc_array.concat(dep_ref.inc_dirs_prepared)
                 end
 
@@ -325,7 +315,7 @@ namespace :package do
                 # Prepare include directories of the dependencies
                 dep_obj_array = []
                 dep_chain.each do |dep|
-                    dep_ref = package_list.get_ref_by_name(dep, pkg_ref.name)
+                    dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
                     dep_ref.compile_and_link_prepare()
                     dep_obj_array.concat(dep_ref.obj_files_prepared)
 

@@ -324,37 +324,4 @@ class SoftwarePackageAppend
             sw_package_set(self)
             load "./#{recipe_file}"
     end
-
-    def post_initialize
-        # nothing to do
-    end
-end
-
-# Class for associating a package name with the swpackage reference
-class SoftwarePackageList
-    attr_reader :name_list
-    attr_reader :ref_list
-
-    def initialize()
-        @name_list = []
-        @ref_list = []
-    end
-
-    def append(name, ref)
-        name_list.push(name)
-        ref_list.push(ref)
-    end
-
-    def get_ref_by_name(name, needed_by_info=nil)
-        result = name_list.index(name)
-        if result == nil
-            if needed_by_info != nil
-                return print_abort("ERROR: No recipe found for package #{name}!" + " Needed by: " + needed_by_info)
-            else
-                return nil
-            end
-        else
-            return ref_list[result]
-        end
-    end
 end

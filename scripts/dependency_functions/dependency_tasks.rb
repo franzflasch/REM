@@ -24,7 +24,7 @@ FILE_TASK = 1
 def package_add_non_file_task_dep(package_list, dependency_list, which, pkg_name)
     dep_str_array = []
     dependency_list.each do |dep|
-        dep_ref = package_list.get_ref_by_name(dep, pkg_name)
+        dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_name)
         dep_str_array.push("package:#{dep_ref.name}:#{which}")
     end
     return dep_str_array
@@ -33,7 +33,7 @@ end
 def package_add_file_task_dep(package_list, dependency_list, which, pkg_name)
     dep_str_array = []
     dependency_list.each do |dep|
-        dep_ref = package_list.get_ref_by_name(dep, pkg_name)
+        dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_name)
         case which
             when "download"
                     dep_str_array.push("#{dep_ref.get_download_state_file()}")

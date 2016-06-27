@@ -54,6 +54,12 @@ module Default
                 src_files_prepared.each_with_index  do |src, obj|
                     execute "#{global_config.get_compiler} #{defines_string} #{global_config.get_compile_flags} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
                 end
+
+                if !srcs.empty?
+                    # Archive object files into static library:
+                    FileUtils.rm_rf("#{pkg_build_dir}/lib#{name}.a")
+                    execute "#{global_config.get_archiver} rcs #{pkg_build_dir}/lib#{name}.a #{obj_files_prepared.join(" ")}"
+                end
             end
     end
 
@@ -65,15 +71,18 @@ module Default
                 FileUtils.rm_rf("#{pkg_state_dir}/link")
             end
 
-            def do_link(objs)
+            def do_link(deps)
                 print_debug "hey I am the Default link function"
-                print_debug "Objects to link: #{objs}"
-                objs_string = ""
-                objs.each do |e|
-                    objs_string << "#{e} "
-                end
+                libs_string = ""
+                library_dirs_string = ""
 
-                execute "#{global_config.get_compiler} #{objs_string} #{global_config.get_link_flags} -o #{pkg_deploy_dir}/#{name}.elf"
+                deps.reverse.each do |e|
+                    if !e.srcs.empty?
+                        libs_string << "-l#{e.name} "
+                        library_dirs_string << "-L#{e.pkg_build_dir} "
+                    end
+                end
+                execute "#{global_config.get_compiler} -static #{global_config.get_link_flags} #{library_dirs_string} #{libs_string} -o #{pkg_deploy_dir}/#{name}.elf"
             end
     end
 

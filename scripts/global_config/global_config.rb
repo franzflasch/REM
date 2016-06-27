@@ -43,6 +43,7 @@ class GlobalConfig
     attr_reader :prefix
     attr_reader :compiler
     attr_reader :obj_cp
+    attr_reader :archiver
     attr_reader :defines
     attr_reader :compile_flags
     attr_reader :link_flags
@@ -71,6 +72,7 @@ class GlobalConfig
 
         @prefix = ""
         @compiler = ""
+        @archiver = ""
         @obj_cp = ""
         @defines = []
         @compile_flags = []
@@ -148,6 +150,14 @@ class GlobalConfig
         end
     end
 
+    def get_archiver
+        if prefix.nil? || prefix.empty?
+            return "#{archiver}"
+        else
+            return "#{prefix}-#{archiver}"
+        end
+    end
+
     def get_defines
         defines_string = ""
         defines.each do |e|
@@ -205,6 +215,10 @@ class GlobalConfig
 
     def set_compiler(compiler)
         @compiler = compiler
+    end
+
+    def set_archiver(archiver)
+        @archiver = archiver
     end
 
     def set_obj_cp(obj_cp)

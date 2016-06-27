@@ -60,7 +60,7 @@ module PackageBuildFunctions
             end
         end
 
-        def compile_and_link_prepare
+        def compile_prepare
             if src_files_prepared.empty?
                 srcs.each do |e|
                     src_files_prepared.push("#{pkg_work_dir}/#{e}")
@@ -75,9 +75,9 @@ module PackageBuildFunctions
             set_state_done("compile")
         end
 
-        def link(objs)
+        def link(deps)
             print_debug "Linking package #{name}..."
-            do_link(objs)
+            do_link(deps)
             set_state_done("link")
         end
 

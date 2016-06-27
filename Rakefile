@@ -268,7 +268,7 @@ namespace :package do
 
                 pkg_ref.set_dependency_incdirs(dep_inc_array)
                 pkg_ref.incdir_prepare()
-                pkg_ref.compile_and_link_prepare()
+                pkg_ref.compile_prepare()
 
                 # Check for updated header or c files
                 header_files = []
@@ -313,24 +313,25 @@ namespace :package do
                 pkg_link_list = package_add_common_task_dep_list(package_list, tasks_common, FILE_TASK, pkg_ref.name)
 
                 # Prepare include directories of the dependencies
-                dep_obj_array = []
+                dep_lib_array = []
+                dep_ref_list = []
                 dep_chain.each do |dep|
                     dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
-                    dep_ref.compile_and_link_prepare()
-                    dep_obj_array.concat(dep_ref.obj_files_prepared)
 
                     # Set global linker flags here, as the linker task does not have any other paralell
                     # executed tasks it is possible to set the linker flags here, locally.
                     dep_ref.global_linker_flags.each do |e|
                         global_config.set_link_flag("#{e}")
                     end
+
+                    dep_ref_list.push(dep_ref)
                 end
 
                 desc "#{pkg_ref.get_package_state_file("link")}"
                 file "#{pkg_ref.get_package_state_file("link")}" =>  pkg_link_list do
                     print_any_green "Linking #{pkg_ref.name}..."
                     pkg_ref.prepare_package_deploy_dir()
-                    pkg_ref.link(dep_obj_array)
+                    pkg_ref.link(dep_ref_list)
                 end
             end
 

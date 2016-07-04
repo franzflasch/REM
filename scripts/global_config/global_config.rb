@@ -23,7 +23,6 @@ require_relative "./config_helper/config"
 
 
 class GlobalConfig
-    attr_reader :main_working_dir
     attr_reader :rakefile_dir
 
     attr_reader :arch
@@ -52,7 +51,6 @@ class GlobalConfig
     attr_reader :cc_prefix
 
     def initialize()
-        @main_working_dir = ""
         @rakefile_dir = ""
 
         @arch = ARCH
@@ -83,10 +81,6 @@ class GlobalConfig
 
     # The getter methods should be considered as 'public' and
     # can be called from anywhere:
-
-    def get_main_working_dir
-        return main_working_dir
-    end
 
     def get_rakefile_dir
         return rakefile_dir
@@ -191,9 +185,6 @@ class GlobalConfig
 
     # These are the setter methods. They should be considered as 'private'
     # and should only be called from dedicated configure files.
-    def set_main_working_dir(dir)
-        @main_working_dir = dir
-    end
 
     def set_rakefile_dir(dir)
         @rakefile_dir = dir

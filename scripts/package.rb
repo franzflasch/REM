@@ -157,7 +157,7 @@ module PackageDescriptor
             set_unique_hash("nohash")
 
             (@base_dir||= []).push(get_dirname_from_uri(recipe_file))
-        end        
+        end
 
         def default_setup_settables(recipe_file)
             @pkg_dl_dir = "#{global_config.get_dl_dir()}/#{name}_#{unique_hash}"
@@ -238,8 +238,6 @@ class SoftwarePackage
 
         def post_initialize
 
-            print_any_red(build_specific_data.class.name)
-
             case "#{download_specific_data.class.name}"
                 when "NilClass"
                     extend DefaultDownload::DownloadPackage
@@ -270,6 +268,7 @@ class SoftwarePackage
                     extend MakePkg::Compile
                     extend MakePkg::Link
                     extend MakePkg::Image
+                    print_any_yellow("Using class #{build_specific_data.class.name} for package #{name}")
                 else
                     print_abort("Package build_type #{build_specific_data.class.name} not known")
             end

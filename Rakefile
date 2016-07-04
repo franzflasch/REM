@@ -65,7 +65,6 @@ namespace :package do
     global_dep_chain = []
 
     # At first set the main rakefile base directory
-    global_config.set_main_working_dir(Rake.original_dir)
     global_config.set_rakefile_dir(File.dirname(__FILE__))
 
     # Check if a rem_file was already generated

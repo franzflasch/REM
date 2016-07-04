@@ -24,7 +24,7 @@ module DefaultPatch
         private
 
             def do_patch
-                main_working_dir = global_config.get_main_working_dir
+                main_working_dir = Rake.original_dir
                 patches.each do |e|
                     execute "patch -d #{pkg_work_dir} -i #{pkg_build_dir}/#{e} -p1 -t"
                 end

@@ -63,18 +63,17 @@ module PackageDescriptor
         attr_reader :mach
         attr_reader :global_defines
         attr_reader :global_linker_flags
-        attr_reader :custom_build_string
 
         # pkg_work_dir: work directory
         attr_reader :pkg_work_dir
 
-        # package type - not really used at the moment, but it is intended to
+        # specific package data - not really used at the moment, but it is intended to
         # be used for build tasks other than the DefaultTasks - please see below:
         # At the moment the this class is only extended by default tasks
-        attr_reader :download_type
-        attr_reader :prepare_type
-        attr_reader :patch_type
-        attr_reader :build_type
+        attr_reader :download_specific_data
+        attr_reader :prepare_specific_data
+        attr_reader :patch_specific_data
+        attr_reader :build_specific_data
 
         ### SETTERS ###
 
@@ -130,13 +129,25 @@ module PackageDescriptor
             (@global_linker_flags ||= []).push(flags)
         end
 
-        def set_custom_build_string(build_str)
-            @custom_build_string = build_str
-        end
-
         def set_work_dir(workdir_str)
             tmp_str = string_strip(workdir_str).strip
             @pkg_work_dir =  "#{pkg_build_dir}/#{tmp_str}"
+        end
+
+        def set_download_specific_data(data)
+            @download_specific_data = data
+        end
+
+        def set_prepare_specific_data(data)
+            @prepare_specific_data = data
+        end
+
+        def set_patch_specific_data(data)
+            @patch_specific_data = data
+        end
+
+        def set_build_specific_data(data)
+            @build_specific_data = data
         end
 
     private
@@ -169,11 +180,6 @@ module PackageDescriptor
             @mach = "generic"
             @global_defines = []
             @global_linker_flags = []
-
-            @download_type = "default"
-            @prepare_type = "default"
-            @patch_type = "default"
-            @build_type = "default"
         end
 
         def parse_uri
@@ -207,20 +213,6 @@ class SoftwarePackage
             default_setup_identifiers(recipe_file)
             default_setup_settables(recipe_file)
 
-            # # Iterate and set instance variables:
-            # self.instance_variables.each do |var|
-            #     print(var.to_s)
-            #     if(var.to_s == "@name")
-            #         print("GOT IT YEAH!")
-            #     end
-            #     #self.instance_variable_set(var, 'foobar')
-            #     print("\n")
-            #     #print(self.instance_variable_get(var).inspect)
-            #     print("\n")
-            # end
-
-            #print_abort("DONE")
-
             # OK, we are done with the default setup, now load the recipe file and setup internals
             sw_package_set(self)
             load "./#{recipe_file}"
@@ -246,44 +238,40 @@ class SoftwarePackage
 
         def post_initialize
 
-            case download_type
-                when "default"
+            print_any_red(build_specific_data.class.name)
+
+            case "#{download_specific_data.class.name}"
+                when "NilClass"
                     extend DefaultDownload::DownloadPackage
                 else
-                    print_abort("Package download_type #{download_type} not known")
+                    print_abort("Package download_type #{download_specific_data.class.name} not known")
             end
 
-            case prepare_type
-                when "default"
+            case "#{prepare_specific_data.class.name}"
+                when "NilClass"
                     extend DefaultPrepare::PreparePackageBuildDir
                 else
-                    print_abort("Package download_type #{prepare_type} not known")
+                    print_abort("Package download_type #{prepare_specific_data.class.name} not known")
             end
 
-            case patch_type
-                when "default"
+            case "#{patch_specific_data.class.name}"
+                when "NilClass"
                     extend DefaultPatch::Patch
                 else
-                    print_abort("Package download_type #{patch_type} not known")
+                    print_abort("Package download_type #{patch_specific_data.class.name} not known")
             end
 
-            case build_type
-                when "default"
+            case "#{build_specific_data.class.name}"
+                when "NilClass"
                     extend Default::Compile
                     extend Default::Link
                     extend Default::Image
-                # when "SomeOtherTasks"
-                #     print_debug "Some other task"
-                #     #extend SomeOtherTasks::DownloadPackage
-                #     extend SomeOtherTasks::PreparePackageBuildDir
-                #     extend SomeOtherTasks::Compile
+                when "MakeTasksDesc"
+                    extend MakePkg::Compile
+                    extend MakePkg::Link
+                    extend MakePkg::Image
                 else
-                    print_abort("Package build_type #{build_type} not known")
-            end
-
-            # Extend custom tasks
-            if !custom_build_string.nil?
-                extend PackageCustomCompile
+                    print_abort("Package build_type #{build_specific_data.class.name} not known")
             end
         end
 

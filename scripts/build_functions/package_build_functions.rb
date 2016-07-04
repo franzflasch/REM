@@ -18,12 +18,6 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-module PackageCustomCompile
-    def do_compile
-        execute custom_build_string
-    end
-end
-
 module PackageBuildFunctions
 
         def download
@@ -54,7 +48,6 @@ module PackageBuildFunctions
         end
 
         def incdir_prepare()
-            #@inc_dirs_prepared = inc_dirs_prepared.uniq
             incdirs.each do |e|
                 inc_dirs_prepared.push("-I #{pkg_work_dir}/#{e}")
             end
@@ -93,30 +86,34 @@ module PackageBuildFunctions
         end
 
         def clean_download
-            print_debug "cleaning prepare package #{name}"
+            print_debug "cleaning download package #{name}"
             do_download_clean()
+            FileUtils.rm_rf("#{pkg_dl_state_dir}")
         end
 
         def clean_prepare
             print_debug "cleaning prepare package #{name}"
             do_prepare_clean()
+            FileUtils.rm_rf("#{pkg_state_dir}/prepare")
         end
 
         def clean_compile
             print_debug "cleaning compile package #{name}"
             do_compile_clean()
+            FileUtils.rm_rf("#{pkg_state_dir}/compile")
         end
 
         def clean_link
             print_debug "cleaning link package #{name}"
             do_link_clean()
+            FileUtils.rm_rf("#{pkg_state_dir}/link")
         end
 
         def cleanall
             print_debug "cleaning all for package #{name}"
-            do_download_clean()
-            do_prepare_clean()
-            do_compile_clean()
-            do_link_clean()
+            clean_link()
+            clean_compile()
+            clean_prepare()
+            clean_download()
         end
 end

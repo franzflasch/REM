@@ -49,7 +49,6 @@ module DefaultPrepare
 
             def do_prepare_clean
                 FileUtils.rm_rf(pkg_build_dir)
-                FileUtils.rm_rf("#{pkg_state_dir}/prepare")
             end
 
             def do_prepare_builddir

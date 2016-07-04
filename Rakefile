@@ -31,6 +31,7 @@ end
 # Machine and compiler specific
 require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
 require_relative "scripts/#{global_config.compiler}_tasks/DefaultTasks"
+require_relative "scripts/#{global_config.compiler}_tasks/MakeTasks"
 
 # Prepare and Patch tasks:
 require_relative "scripts/download_tasks/DefaultTasks"
@@ -90,10 +91,9 @@ namespace :package do
             merge_recipes_append(temp_pkgs, temp_pkgs_append)
             #temp_pkgs_append = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
         end
-
-        # Now filter out unsuited recipes
-        global_package_list = temp_pkgs
     end
+
+    global_package_list = temp_pkgs
 
     global_package_list.each do |pkg|
 

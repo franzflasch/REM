@@ -22,9 +22,7 @@ module Default
     module Compile
 
         private
-
             def do_compile_clean
-                FileUtils.rm_rf("#{pkg_state_dir}/compile")
             end
 
             def do_compile
@@ -34,21 +32,10 @@ module Default
                 print_debug "IncDirsPrepared: #{inc_dirs_prepared}"
                 print_debug "SrcFilesPrepared: #{src_files_prepared}"
 
-                inc_dirs_string = ""
-                inc_dirs_depends_prepared.each do |e|
-                    inc_dirs_string << "#{e} "
-                end
-                inc_dirs_prepared.each do |e|
-                    inc_dirs_string << "#{e} "
-                end
+                inc_dirs_string = inc_dirs_depends_prepared.map { |element| "#{element} " }.join("")
+                inc_dirs_string << inc_dirs_prepared.map { |element| "#{element} " }.join("")
 
-                defines_string = ""
-
-                # local package defines
-                defs.each do |e|
-                    defines_string << "-D#{e} "
-                end
-
+                defines_string = defs.map { |element| "-D#{element} " }.join("")
                 defines_string << "#{global_config.get_defines()}"
 
                 src_files_prepared.each_with_index  do |src, obj|
@@ -60,27 +47,20 @@ module Default
     module Link
 
         private
-
             def do_link_clean
-                FileUtils.rm_rf("#{pkg_state_dir}/link")
             end
 
             def do_link(objs)
                 print_debug "hey I am the Default link function"
                 print_debug "Objects to link: #{objs}"
-                objs_string = ""
-                objs.each do |e|
-                    objs_string << "#{e} "
-                end
-
-                execute "#{global_config.get_compiler} #{objs_string} #{global_config.get_link_flags} -o #{pkg_deploy_dir}/#{name}.elf"
+                objs_string = objs.join(" ")
+                execute "#{global_config.get_compiler} #{objs_string} #{global_config.get_link_flags} -Wl,-Map=#{pkg_deploy_dir}/#{name}.map -o #{pkg_deploy_dir}/#{name}.elf"
             end
     end
 
     module Image
 
         private
-
             def do_make_bin
                 execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O binary #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.bin"
             end

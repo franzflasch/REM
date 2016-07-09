@@ -32,8 +32,8 @@ module Default
                 print_debug "IncDirsPrepared: #{inc_dirs_prepared}"
                 print_debug "SrcFilesPrepared: #{src_files_prepared}"
 
-                inc_dirs_string = inc_dirs_depends_prepared.map { |element| "#{element} " }.join("")
-                inc_dirs_string << inc_dirs_prepared.map { |element| "#{element} " }.join("")
+                inc_dirs_string = inc_dirs_depends_prepared.map { |element| "-I #{element} " }.join("")
+                inc_dirs_string << inc_dirs_prepared.map { |element| "-I #{element} " }.join("")
 
                 defines_string = defs.map { |element| "-D#{element} " }.join("")
                 defines_string << "#{global_config.get_defines()}"

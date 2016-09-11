@@ -76,6 +76,8 @@ module PackageBuildFunctions
                     do_make_bin()
                 when "hex"
                     do_make_hex()
+                when "srec"
+                    do_make_srec()
                 else
                     abort("Invalid image argument!")
             end

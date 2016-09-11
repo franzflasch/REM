@@ -68,5 +68,9 @@ module Default
             def do_make_hex
                 execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O ihex #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.hex"
             end
+
+            def do_make_srec
+                execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O srec #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.srec"
+            end
     end
 end

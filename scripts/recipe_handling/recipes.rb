@@ -126,9 +126,9 @@ def filter_packages(pkg_list, current_arch_config, current_mach_config)
 
     pkg_list = tmp_pkg_list
 
-    print_any("Now having the following recipes:")
+    print_debug("Now having the following recipes:")
     pkg_list.each do | pkg |
-        print_any(pkg.name)
+        print_debug(pkg.name)
     end
 
     return tmp_pkg_list

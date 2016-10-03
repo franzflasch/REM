@@ -74,7 +74,7 @@ namespace :package do
         # restored when loading the yaml file
         temp_pkgs.each { |pkg| pkg.post_initialize() }
     else
-        print_any("Parsing recipes...")
+        print_debug("Parsing recipes...")
         rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
         if rem_recipes == nil
             print_abort ("No recipes found!")
@@ -104,6 +104,7 @@ namespace :package do
 
             desc "depends_chain_print"
             task :depends_chain_print => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
+                print_any_green "DEPENDENCY-CHAIN:"
                 global_dep_chain.each do |dep|
                     dep_ref = pkg_get_ref_by_name(global_package_list, dep, pkg.name)
                     tmp_string = ""
@@ -371,28 +372,61 @@ namespace :package do
             end
 
 
+
+            desc "Do #{pkg.name} check dependency chain"
+            task :check_deps, [:what, :compile_link] do |t, args|
+                if !args.what
+                    print_abort("No package for removal given!")
+                end
+
+                pkg_to_remove = args[:what]
+                print_any_green "Building #{pkg.name} without dep #{pkg_to_remove}"
+
+                if !pkg.deps.include? pkg_to_remove
+                    print_abort "Packge #{pkg_to_remove} not in list!"
+                end
+
+                print_any_green "Deps before #{pkg.deps}"
+                pkg.deps.delete(pkg_to_remove)
+                print_any_green "Deps after #{pkg.deps}"
+
+                # Remove the task from the prerequisite list:
+                Rake::Task["package:#{pkg.name}:compile"].prerequisites.delete("package:#{pkg_to_remove}:compile")
+                Rake::Task["package:#{pkg.name}:compile"].invoke()
+
+                if !args.compile_link
+                    Rake::Task["package:#{pkg.name}:compile"].invoke()
+                else
+                    Rake::Task["package:#{pkg.name}:link"].invoke()
+                end
+            end
+
         end
     end
 
 
 
     task :create_workdir do
-        print_any("Preparing work directories...")
+        print_debug("Preparing work directories...")
         create_workdir()
     end
 
     task :remfile_clean do
-        print_any("Deleting #{global_config.get_remfile()}")
+        print_debug("Deleting #{global_config.get_remfile()}")
         FileUtils.rm_f(global_config.get_remfile())
     end
 
+    task :dirclean do
+        print_debug("Deleting basedir #{BASE_DIR}")
+        FileUtils.rm_rf("#{BASE_DIR}")
+    end
 
     desc "List available packages"
     task :list_packages do |t, args|
-        print_any ""
-        print_any "Following software packages are available for this architecture: "
+        print_debug ""
+        print_debug "Following software packages are available for this architecture: "
         global_package_list.ref_list.each do |pkg|
-            print_any "#{pkg.name}"
+            print_debug "#{pkg.name}"
         end
     end
 end

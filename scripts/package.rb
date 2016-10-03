@@ -159,7 +159,7 @@ module PackageDescriptor
             (@base_dir||= []).push(get_dirname_from_uri(recipe_file))
         end
 
-        def default_setup_settables(recipe_file)
+        def default_setup_settables()
             @pkg_dl_dir = "#{global_config.get_dl_dir()}/#{name}_#{unique_hash}"
             @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}/#{name}_#{unique_hash}"
             @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}_#{unique_hash}"
@@ -211,7 +211,7 @@ class SoftwarePackage
 
         def initialize(recipe_file)
             default_setup_identifiers(recipe_file)
-            default_setup_settables(recipe_file)
+            default_setup_settables()
 
             # OK, we are done with the default setup, now load the recipe file and setup internals
             sw_package_set(self)

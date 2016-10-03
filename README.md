@@ -63,6 +63,11 @@ rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir 
 ```
 The output will be placed in a folder called 'coverage'
 
+## There is also a little script which helps checking if you have unnecessary dependencies set:
+```Shell
+WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER="test_project rem_packages" PACKAGE_NAME=test_project check_deps.sh
+```
+
 ## Currently supported microcontrollers (resp. eval-boards)
 AVR Atmega168
 ST Olimex STM32H103

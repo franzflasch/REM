@@ -1,5 +1,9 @@
 # REM
-Rake based buildsystem for EMbedded Systems and Microcontrollers
+REM is a Yocto like buildsystem primary intended for microcontrollers. It is based on ruby rake and therefore offers
+a highly flexible way of setting up projects for microcontrollers. If you know Yocto it should be easy to
+learn the REM buildsystem. It consists of some "killer"-features of Yocto like recipe appending. Projects can be
+setup by only defining recipes, which describe how a specific component should be built. You can even setup your project
+with sources completely hosted by github! Not necessary to copy-paste software packages and libraries!
 
 ## Prerequisites
 Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)

@@ -29,7 +29,12 @@ do
 	for dep in $deps_for_package
 		do
 		echo "Trying to build $pkg without $dep"
-		rem package:dirclean
+		for dep_to_clean in $deps_for_package
+		do
+			#rem package:dirclean
+			rem package:$dep_to_clean:clean[compile]
+		done
+		rem package:$pkg:clean[compile]
 		if [ "$pkg" == "$PACKAGE_NAME" ]; then
 			echo "Last entry: $pkg - we should better do linking here..."
 			rem package:$pkg:check_deps[$dep,1]

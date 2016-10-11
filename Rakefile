@@ -338,6 +338,7 @@ namespace :package do
             task :link => package_add_common_task_dep_list(global_package_list, link_tasks_common, NON_FILE_TASK, pkg.name) +
                           package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
                 print_debug("link: #{pkg.name}")
+                print_any_green "Deps afterafter #{global_dep_chain}"
                 create_link_file_task(pkg, global_package_list, link_tasks_common, global_dep_chain)
                 Rake::Task["#{pkg.get_package_state_file("link")}"].invoke()
             end
@@ -374,30 +375,45 @@ namespace :package do
 
 
             desc "Do #{pkg.name} check dependency chain"
-            task :check_deps, [:what, :compile_link] do |t, args|
+            task :check_deps, [:what, :compile_link, :base_pkg] do |t, args|
                 if !args.what
                     print_abort("No package for removal given!")
                 end
+
+                if !args.base_pkg
+                    print_abort("No base package given!")
+                end
+
+                # Prepare globals like global defines to be sure we are using the correct setup
+                Rake::Task["package:#{args[:base_pkg]}:compile_globals_prepare"].invoke()
 
                 pkg_to_remove = args[:what]
                 print_any_green "Building #{pkg.name} without dep #{pkg_to_remove}"
 
                 if !pkg.deps.include? pkg_to_remove
-                    print_abort "Packge #{pkg_to_remove} not in list!"
+                    print_abort "Package #{pkg_to_remove} not in list!"
                 end
-
+                
+                # Now remove one dep, and build again, to check compile step
                 print_any_green "Deps before #{pkg.deps}"
                 pkg.deps.delete(pkg_to_remove)
                 print_any_green "Deps after #{pkg.deps}"
 
-                # Remove the task from the prerequisite list:
-                Rake::Task["package:#{pkg.name}:compile"].prerequisites.delete("package:#{pkg_to_remove}:compile")
-                Rake::Task["package:#{pkg.name}:compile"].invoke()
-
-                if !args.compile_link
+                if args[:compile_link] == "compile"
+                    # Remove the task from the prerequisite list:
+                    Rake::Task["package:#{pkg.name}:compile"].prerequisites.delete("package:#{pkg_to_remove}:compile")
                     Rake::Task["package:#{pkg.name}:compile"].invoke()
-                else
+                elsif args[:compile_link] == "link"
+
+                    Rake::Task["package:#{pkg.name}:get_dep_chain"].invoke()
+
+                    # Now remove the one package from the dep list:
+                    print_any_green "Deps before #{global_dep_chain}"
+                    global_dep_chain.delete(pkg_to_remove)
+                    print_any_green "Deps after #{global_dep_chain}"
                     Rake::Task["package:#{pkg.name}:link"].invoke()
+                else
+                    print_abort "Please specify if link or compile command!"
                 end
             end
 

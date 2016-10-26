@@ -338,7 +338,6 @@ namespace :package do
             task :link => package_add_common_task_dep_list(global_package_list, link_tasks_common, NON_FILE_TASK, pkg.name) +
                           package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
                 print_debug("link: #{pkg.name}")
-                print_any_green "Deps afterafter #{global_dep_chain}"
                 create_link_file_task(pkg, global_package_list, link_tasks_common, global_dep_chain)
                 Rake::Task["#{pkg.get_package_state_file("link")}"].invoke()
             end

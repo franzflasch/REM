@@ -14,20 +14,72 @@ unzip
 git
 patch
 
+# Getting started Debian/Ubuntu
+
+## 1. Install rake
+```Shell
+sudo apt-get install rake
+```
+
+## 2. Install other dependencies
+```Shell
+sudo apt-get install gcc-arm-none-eabi gcc-avr git subversion unzip
+```
+
+## 3. Fetch REM buildsystem
+```Shell
+mkdir rem_build
+cd rem_build
+git clone https://github.com/franzflasch/REM.git
+```
+
+## 4. Prepare test project
+```Shell
+git clone https://github.com/franzflasch/rem_packages.git
+git clone https://github.com/franzflasch/rem_test_project.git
+```
+
+## 5. Prepare PATH
+```Shell
+cd REM
+export PATH=`pwd`:$PATH
+cd ..
+```
+
+## 6. Start build
+
+### AVR Atmega168
+```Shell
+rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
+```
+
+### STM32F3
+```Shell
+rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[bin]
+```
+
+The image will end up in rem_workdir/<arch>_<machine>/deploy
+It will be either a binary or hex image, depending on what you've chosen to build.
+
+After the successful build you can flash the image with the right tool for your microcontroller.
+
+
+# Further Build examples:
+
 ## How to build a hex file of the test project suited for an avr atmega168:
 ```Shell
-rake ARCH=avr MACH=atmega168 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[hex]
+rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[hex]
 ```
 The arguments "-m -j4" mean to build with max 4 threads simultaneously.
 
 ## How to build a binary file of the test project suited for an arm stm32f3:
 ```Shell
-rake ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin]
+rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin]
 ```
 
 ## You can also add verbose output:
 ```Shell
-rake ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin] VERBOSE=1
+rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin] VERBOSE=1
 ```
 
 ## Example of how to load the hex file into an atmega168 microcontroller.
@@ -37,16 +89,10 @@ avrdude -F -cstk500v2 -P/dev/ttyUSB0 -patmega168p -Uflash:w:workdir/avr_atmega16
 
 ## List all available packages for this architecture:
 ```Shell
-rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
+rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
 ```
 
 ## Get a list of dependencies for a particular package:
-```Shell
-rake ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
-```
-
-## Using the shell based wrapper script to start the build:
-REM also comes with a wrapper script, which basically calls rake -f "path/to/main/Rakefile" and allows to start the build outside of the REM base directory, if it is added to the PATH variable:
 ```Shell
 rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
 ```

@@ -1,20 +1,18 @@
 # REM
-REM is a Yocto like buildsystem primary intended for microcontrollers. It is based on ruby rake and therefore offers
-a highly flexible way of setting up projects for microcontrollers. If you know Yocto it should be easy to
-learn the REM buildsystem. It consists of some "killer"-features of Yocto like recipe appending. Projects can be
-setup by only defining recipes, which describe how a specific component should be built. You can even setup your project
-with sources completely hosted by github! Not necessary to copy-paste software packages and libraries!
+REM is a Yocto like buildsystem primary intended for microcontrollers. It is based on ruby rake and therefore offers a highly flexible way of setting up projects for microcontrollers. If you know Yocto it should be easy to also learn the REM buildsystem. It consists of some features of Yocto, like recipe appending, inbuild patching and downloading software packages. Projects can be setup by only defining recipes, which describe how a specific component should be built. You can even setup your project with sources completely hosted by github! Not necessary to copy-paste software packages and libraries!
 
 ## Prerequisites
-Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)
-ruby (a recent version: >= version 2.2.1)
-rake (a recent version: >= version 10.4.2)
-simplecov (if you want to use codecoverage tool)
-unzip
-git
-patch
+* Appropriate Microcontroller toolchain (arm-none-eabi, avr, sdcc ...)
+* ruby (a recent version: >= version 2.2.1)
+* rake (a recent version: >= version 10.4.2)
+* unzip
+* git
+* subversion
+* simplecov (optional)
 
 # Getting started Debian/Ubuntu
+* Debian (at least 8 "jessie")
+* Ubuntu (at least 14.04 "Trusty Tahr")
 
 ## 1. Install rake
 ```Shell
@@ -58,31 +56,22 @@ rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_test_project" -m -j
 rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[bin]
 ```
 
-The image will end up in rem_workdir/<arch>_<machine>/deploy
+The image will end up in rem_workdir/#{arch}_#{machine}/deploy
 It will be either a binary or hex image, depending on what you've chosen to build.
+
+The arguments "-m -j4" mean to build with max 4 threads simultaneously.
 
 After the successful build you can flash the image with the right tool for your microcontroller.
 
 
 # Further Build examples:
 
-## How to build a hex file of the test project suited for an avr atmega168:
-```Shell
-rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[hex]
-```
-The arguments "-m -j4" mean to build with max 4 threads simultaneously.
-
-## How to build a binary file of the test project suited for an arm stm32f3:
-```Shell
-rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin]
-```
-
-## You can also add verbose output:
+## Verbose output:
 ```Shell
 rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin] VERBOSE=1
 ```
 
-## Example of how to load the hex file into an atmega168 microcontroller.
+## Load the hex file into an atmega168 microcontroller.
 ```Shell
 avrdude -F -cstk500v2 -P/dev/ttyUSB0 -patmega168p -Uflash:w:workdir/avr_atmega168/deploy/test_project/test_project.hex
 ```
@@ -97,7 +86,8 @@ rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
 rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
 ```
 
-## It is also possible to generate a package specific "remfile", in which all infos about the package and its dependencies are stored. This should increase the speed of the whole build process, as it is not needed to reparse all recipes when starting a new build.
+## Generating a "remfile"
+It is also possible to generate a package specific "remfile", in which all infos about the package and its dependencies are stored. This should increase the speed of the whole build process, as it is not needed to reparse all recipes when starting a new build.
 ```Shell
 rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:test_project:remfile_generate
 ```
@@ -113,13 +103,14 @@ rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir 
 ```
 The output will be placed in a folder called 'coverage'
 
-## There is also a little script which helps checking if you have unnecessary dependencies set:
+## Dependency Check
+There is also a little script which helps checking if you have unnecessary dependencies set:
 ```Shell
 WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER="test_project rem_packages" PACKAGE_NAME=test_project check_deps.sh
 ```
 
-## Currently supported microcontrollers (resp. eval-boards)
-AVR Atmega168
-ST Olimex STM32H103
-ST STM32F3 Discovery
-ST STM32F4 Discovery
+## Supported microcontrollers (resp. eval-boards)
+* AVR Atmega168
+* ST Olimex STM32H103
+* ST STM32F3 Discovery
+* ST STM32F4 Discovery

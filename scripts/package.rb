@@ -63,6 +63,7 @@ module PackageDescriptor
         attr_reader :mach
         attr_reader :global_defines
         attr_reader :global_linker_flags
+        attr_reader :linker_script
 
         # pkg_work_dir: work directory
         attr_reader :pkg_work_dir
@@ -129,6 +130,10 @@ module PackageDescriptor
             (@global_linker_flags ||= []).push(flags)
         end
 
+        def set_linker_script(script)
+            @linker_script = string_strip(script).strip
+        end
+
         def set_work_dir(workdir_str)
             tmp_str = string_strip(workdir_str).strip
             @pkg_work_dir =  "#{pkg_build_dir}/#{tmp_str}"
@@ -180,6 +185,7 @@ module PackageDescriptor
             @mach = "generic"
             @global_defines = []
             @global_linker_flags = []
+            @linker_script = ""
         end
 
         def parse_uri

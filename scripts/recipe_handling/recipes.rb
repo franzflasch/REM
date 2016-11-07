@@ -84,6 +84,8 @@ def merge_recipes_append(recipe_list, append_recipe_list)
             print_any_yellow("Could not find matching base recipe for append recipe " + append_pkg.name)
         else
             print_any_yellow(tmp_pkg.name)
+            # rewrite linkerscript
+            tmp_pkg.instance_variable_set(:@linker_script, append_pkg.instance_variable_get(:@linker_script))
             # Iterate and set instance variables:
             append_pkg.instance_variables.each do |var|
                 # print(var)

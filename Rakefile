@@ -324,6 +324,11 @@ namespace :package do
                     dep_ref.global_linker_flags.each do |e|
                         global_config.set_link_flag("#{e}")
                     end
+
+                    # Set linker script
+                    unless dep_ref.linker_script.to_s.strip.empty?
+                        global_config.set_link_flag("-T #{dep_ref.pkg_build_dir}/#{dep_ref.linker_script}")
+                    end
                 end
 
                 desc "#{pkg_ref.get_package_state_file("link")}"

@@ -30,8 +30,8 @@ end
 
 # Machine and compiler specific
 require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
-require_relative "scripts/#{global_config.compiler}_tasks/DefaultTasks"
-require_relative "scripts/#{global_config.compiler}_tasks/MakeTasks"
+require_relative "scripts/compile_tasks/#{global_config.compiler}_tasks/DefaultTasks"
+require_relative "scripts/compile_tasks/make_tasks/MakeTasks"
 
 # Prepare and Patch tasks:
 require_relative "scripts/download_tasks/DefaultTasks"
@@ -321,14 +321,7 @@ namespace :package do
 
                     # Set global linker flags here, as the linker task does not have any other paralell
                     # executed tasks it is possible to set the linker flags here, locally.
-                    dep_ref.global_linker_flags.each do |e|
-                        global_config.set_link_flag("#{e}")
-                    end
-
-                    # Set linker script
-                    unless dep_ref.linker_script.to_s.strip.empty?
-                        global_config.set_link_flag("-T #{dep_ref.pkg_build_dir}/#{dep_ref.linker_script}")
-                    end
+                    global_config.set_link_flag(dep_ref.get_prepared_link_string())
                 end
 
                 desc "#{pkg_ref.get_package_state_file("link")}"

@@ -18,6 +18,7 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
+require_relative "../common/#{global_config.compiler}_LinkPrepare"
 
 class MakeTasksDesc
 
@@ -47,8 +48,6 @@ class MakeTasksDesc
     end
 end
 
-
-
 module MakePkg
     module Compile
         private
@@ -66,6 +65,9 @@ module MakePkg
         private
             def do_link_clean
             end
+
+            include CommonLinkTasks
+
             def do_link(objs)
                 print_debug "Not implemented"
             end

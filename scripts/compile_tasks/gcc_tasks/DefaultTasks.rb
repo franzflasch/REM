@@ -1,5 +1,5 @@
 =begin
-    
+
     Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
@@ -18,71 +18,60 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
+require_relative "../common/gcc_LinkPrepare"
+
 module Default
     module Compile
-
         private
-
             def do_compile_clean
-                FileUtils.rm_rf("#{pkg_state_dir}/compile")
             end
 
             def do_compile
-                print_debug "hey I am the SDCC compile function"
+                print_debug "hey I am the Default compile function"
 
-                print_debug "IncDirs: #{incdirs}"
+                print_debug "IncDirsDependsPrepared: #{inc_dirs_depends_prepared}"
                 print_debug "IncDirsPrepared: #{inc_dirs_prepared}"
                 print_debug "SrcFilesPrepared: #{src_files_prepared}"
 
-                inc_dirs_string = ""
-                inc_dirs_prepared.each do |e|
-                    inc_dirs_string << "#{e} "
-                end
+                inc_dirs_string = inc_dirs_depends_prepared.map { |element| "-I #{element} " }.join("")
+                inc_dirs_string << inc_dirs_prepared.map { |element| "-I #{element} " }.join("")
 
-                defines_string = ""
-
-                # local package defines
-                defs.each do |e|
-                    defines_string << "-D#{e} "
-                end
-
+                defines_string = defs.map { |element| "-D#{element} " }.join("")
                 defines_string << "#{global_config.get_defines()}"
 
                 src_files_prepared.each_with_index  do |src, obj|
-                    execute "#{global_config.get_compiler} #{defines_string} #{global_config.get_compile_flags()} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
+                    execute "#{global_config.get_compiler} #{defines_string} #{global_config.get_compile_flags} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
                 end
             end
     end
 
     module Link
-
         private
-
             def do_link_clean
-                FileUtils.rm_rf("#{pkg_state_dir}/link")
             end
+
+            include CommonLinkTasks
 
             def do_link(objs)
                 print_debug "hey I am the Default link function"
                 print_debug "Objects to link: #{objs}"
-                objs_string = ""
-                objs.each do |e|
-                    objs_string << "#{e} "
-                end
-
-                execute "#{global_config.get_compiler} #{global_config.get_link_flags()} #{objs_string} -o #{pkg_deploy_dir}/#{name}.ihx"
-                #set_state_done("link")
+                objs_string = objs.join(" ")
+                execute "#{global_config.get_compiler} #{objs_string} #{global_config.get_link_flags} -Wl,-Map=#{pkg_deploy_dir}/#{name}.map -o #{pkg_deploy_dir}/#{name}.elf"
             end
     end
 
     module Image
-
         private
-
             def do_make_bin
+                execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O binary #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.bin"
             end
 
             def do_make_hex
+                execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O ihex #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.hex"
+            end
+
+            def do_make_srec
+                execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O srec #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.srec"
             end
     end
 end

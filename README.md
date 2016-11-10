@@ -11,8 +11,9 @@ REM is a Yocto like buildsystem primarily intended for microcontrollers. It is b
 * simplecov (optional)
 
 # Getting started Debian/Ubuntu
-* Debian (at least 8 "jessie")
-* Ubuntu (at least 14.04 "Trusty Tahr")
+* Minimal requirements
+    - Debian (at least 8 "jessie")
+    - Ubuntu (at least 14.04 "Trusty Tahr")
 
 ## 1. Install rake
 ```Shell
@@ -21,7 +22,7 @@ sudo apt-get install rake
 
 ## 2. Install other dependencies
 ```Shell
-sudo apt-get install gcc-arm-none-eabi gcc-avr git subversion unzip
+sudo apt-get install gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip
 ```
 
 ## 3. Fetch REM buildsystem
@@ -46,14 +47,19 @@ cd ..
 
 ## 6. Start build
 
-### AVR Atmega168
+### Atmel Atmega168
 ```Shell
 rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
 ```
 
-### STM32F3
+### STMicroelectronics STM32F3
 ```Shell
 rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[bin]
+```
+
+### SILABS C8051FXXX
+```Shell
+rem ARCH=8051 MACH=C8051FXXX PROJECT_FOLDER="rem_packages rem_test_project_sdcc" -m -j4 package:test_project:image[hex]
 ```
 
 The image will end up in rem_workdir/#{arch}_#{machine}/deploy
@@ -104,13 +110,17 @@ rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir 
 The output will be placed in a folder called 'coverage'
 
 ## Dependency Check
-There is also a little script which helps checking if you have unnecessary dependencies set:
+There is also a little script which helps checking if there are any superfluous dependencies set:
 ```Shell
 WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER="test_project rem_packages" PACKAGE_NAME=test_project check_deps.sh
 ```
 
-## Supported microcontrollers (resp. eval-boards)
-* AVR Atmega168
-* ST Olimex STM32H103
-* ST STM32F3 Discovery
-* ST STM32F4 Discovery
+## Supported microcontrollers
+* Atmel Atmega168
+* STMicroelectronics:
+    - STM32F1
+    - STM32F3
+    - STM32F4
+* SILABS
+    - C8051FXXX
+

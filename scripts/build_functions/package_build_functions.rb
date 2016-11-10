@@ -64,6 +64,10 @@ module PackageBuildFunctions
             set_state_done("compile")
         end
 
+        def get_prepared_link_string
+            return do_prepare_link_string
+        end
+
         def link(objs)
             print_debug "Linking package #{name}..."
             do_link(objs)

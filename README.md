@@ -22,7 +22,7 @@ sudo apt-get install rake
 
 ## 2. Install other dependencies
 ```Shell
-sudo apt-get install gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip
+sudo apt-get install gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python
 ```
 
 ## 3. Fetch REM buildsystem

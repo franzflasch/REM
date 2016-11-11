@@ -1,0 +1,22 @@
+#
+# Super simple example of a Dockerfile
+#
+FROM debian:jessie
+
+WORKDIR /home/rem_build
+
+RUN apt-get update -y
+RUN apt-get install -y rake gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python
+
+RUN git clone https://github.com/franzflasch/REM.git
+
+ENV PATH /home/rem_build/REM:$PATH
+
+RUN git clone https://github.com/franzflasch/rem_packages.git
+RUN git clone https://github.com/franzflasch/rem_test_project.git
+
+RUN rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
+RUN rm -rf rem_workdir
+RUN rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[bin]
+RUN rm -rf rem_workdir
+#RUN rem ARCH=8051 MACH=C8051FXXX PROJECT_FOLDER="rem_packages rem_test_project_sdcc" -m -j4 package:test_project:image[hex]

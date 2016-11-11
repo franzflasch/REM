@@ -1,4 +1,4 @@
-# Teststatus
+## Teststatus
 ![Test Status](https://img.shields.io/badge/debian%208-passed-green.svg)
 ![Test Status](https://img.shields.io/badge/ubuntu%2014.04-passed-green.svg)
 

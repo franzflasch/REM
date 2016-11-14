@@ -19,5 +19,6 @@ do
 		echo "${BUILD_ITEM_NAME[$i]} not passed!"
 	else
 		echo "${BUILD_ITEM_NAME[$i]} passed!"
+		exit 1
 	fi
 done

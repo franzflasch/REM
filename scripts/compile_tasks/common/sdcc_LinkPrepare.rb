@@ -20,6 +20,11 @@
 
 module CommonLinkTasks
     def do_prepare_link_string
-        return ""
+        tmp_str = ""
+        global_linker_flags.each do |e|
+            tmp_str.concat("#{e} ")
+        end
+        
+        return tmp_str
     end
 end

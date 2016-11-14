@@ -17,8 +17,10 @@ for ((i=0; i < ${#BUILD_ITEM_RESULT[@]}; i++))
 do
 	if [[ ${BUILD_ITEM_RESULT[$i]} != 0 ]]; then
 		echo "${BUILD_ITEM_NAME[$i]} not passed!"
+		exit 1
 	else
 		echo "${BUILD_ITEM_NAME[$i]} passed!"
-		exit 1
 	fi
 done
+
+exit 0

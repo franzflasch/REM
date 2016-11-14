@@ -7,3 +7,4 @@ services:
 
 script:
 - bash ./tests/run_docker_tests.sh
+

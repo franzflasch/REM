@@ -1,4 +1,4 @@
-- ![Test Status](https://travis-ci.org/franzflasch/REM.svg?branch=master)](https://travis-ci.org/franzflasch/REM)
+[![Test Status](https://travis-ci.org/franzflasch/REM.svg?branch=master)](https://travis-ci.org/franzflasch/REM)
 
 # REM
 REM is a Yocto like buildsystem primarily intended for microcontrollers. It is based on ruby rake and therefore offers a highly flexible way of setting up projects for microcontrollers. If you know Yocto it should be easy to also learn the REM buildsystem. It consists of some features of Yocto, like recipe appending, inbuild patching and downloading software packages. Projects can be setup by only defining recipes, which describe how a specific component should be built. You can even setup your project with sources completely hosted by github! Not necessary to copy-paste software packages and libraries!

@@ -5,9 +5,10 @@ language: bash
 services:
   - docker
 
-matrix:
-  - OS_TYPE=debian OS_VERSION=8
-  - OS_TYPE=ubuntu OS_VERSION=14_04
+env:
+  matrix:
+    - OS_TYPE=debian OS_VERSION=8
+    - OS_TYPE=ubuntu OS_VERSION=14_04
 
 script:
-  - bash docker build -f tests/docker/dockerfile_${OS_TYPE}_${OS_VERSION} .
+  - bash docker build -f tests/docker/dockerfile_${OS_TYPE}_${OS_VERSION}.dockertest .

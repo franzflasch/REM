@@ -1,3 +1,5 @@
+![icon](https://github.com/franzflasch/REM/blob/master/rem.png?raw=true)
+
 [![Test Status](https://travis-ci.org/franzflasch/REM.svg?branch=master)](https://travis-ci.org/franzflasch/REM)
 
 # REM

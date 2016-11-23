@@ -5,6 +5,9 @@ language: bash
 services:
   - docker
 
-script:
-- bash ./tests/run_docker_tests.sh
+matrix:
+  - OS_TYPE=debian OS_VERSION=8
+  - OS_TYPE=ubuntu OS_VERSION=14_04
 
+script:
+  - bash docker build -f tests/docker/dockerfile_${OS_TYPE}_${OS_VERSION} .

@@ -81,8 +81,6 @@ namespace :package do
         end
 
         temp_pkgs = prepare_recipes(rem_recipes)
-        temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
-        temp_pkgs.each { |pkg| pkg.post_initialize() }
 
         remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
         if remappend_recipes != nil
@@ -90,6 +88,9 @@ namespace :package do
             merge_recipes_append(temp_pkgs, temp_pkgs_append)
             #temp_pkgs_append = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
         end
+
+        temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
+        temp_pkgs.each { |pkg| pkg.post_initialize() }
     end
 
     global_package_list = temp_pkgs
@@ -141,7 +142,7 @@ namespace :package do
                 hash = 0
                 global_dep_chain.each do |dep|
                     dep_ref = pkg_get_ref_by_name(global_package_list, dep, pkg.name)
-                    version_string << "#{dep_ref.version}"
+                    version_string << "#{dep_ref.version[0]}"
                 end
                 case args[:what]
                     when "md5"
@@ -204,7 +205,7 @@ namespace :package do
 
                 # Add source file dependencies and include folders
                 # This is quite hacky, but the best solution so far:
-                if pkg_ref.uri_type == "local"
+                if pkg_ref.uri[0].uri_type == "local"
                     pkg_ref.srcs.each do |e|
                         found = 0
                         pkg_ref.base_dir.each do |dir|
@@ -273,11 +274,11 @@ namespace :package do
                 # Check for updated header or c files
                 header_files = []
                 pkg_ref.incdirs.each do |e|
-                    header_files.concat(find_files_with_ending("#{pkg_ref.pkg_work_dir}/#{e}", "h"))
+                    header_files.concat(find_files_with_ending("#{pkg_ref.get_pkg_work_dir}/#{e}", "h"))
                 end
                 pkg_compile_list.concat(header_files)
 
-                c_files = pkg_ref.srcs.map { |element| "#{pkg_ref.pkg_work_dir}/#{element}" }
+                c_files = pkg_ref.srcs.map { |element| "#{pkg_ref.get_pkg_work_dir}/#{element}" }
                 pkg_compile_list.concat(c_files)
 
                 desc "#{pkg_ref.get_package_state_file("compile")}"
@@ -438,8 +439,10 @@ namespace :package do
     task :list_packages do |t, args|
         print_debug ""
         print_debug "Following software packages are available for this architecture: "
-        global_package_list.ref_list.each do |pkg|
+        global_package_list.each do |pkg|
             print_debug "#{pkg.name}"
+            print_debug "\t\t\t#{pkg.version[0]}"
+            print_debug ""
         end
     end
 end

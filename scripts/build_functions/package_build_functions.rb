@@ -48,13 +48,13 @@ module PackageBuildFunctions
         end
 
         def incdir_prepare()
-            @inc_dirs_prepared = incdirs.map { |e| "#{pkg_work_dir}/#{e}" }
+            @inc_dirs_prepared = incdirs.map { |e| "#{get_pkg_work_dir}/#{e}" }
         end
 
         def compile_and_link_prepare
             if src_files_prepared.empty?
-                @src_files_prepared = srcs.map { |e| "#{pkg_work_dir}/#{e}" }
-                @obj_files_prepared = srcs.map { |e| "#{pkg_work_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}" }
+                @src_files_prepared = srcs.map { |e| "#{get_pkg_work_dir}/#{e}" }
+                @obj_files_prepared = srcs.map { |e| "#{get_pkg_work_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}" }
             end
         end
 

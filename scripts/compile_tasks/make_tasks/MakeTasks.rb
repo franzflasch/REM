@@ -52,12 +52,12 @@ module MakePkg
     module Compile
         private
             def do_compile_clean
-                execute build_specific_data.compile_clean_command
+                execute get_build_specific_data.compile_clean_command
             end
 
             def do_compile
                 print_debug "hey I am the Make compile function"
-                execute build_specific_data.compile_command
+                execute get_build_specific_data.compile_command
             end
     end
 

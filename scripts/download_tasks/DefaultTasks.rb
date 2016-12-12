@@ -24,7 +24,7 @@ module DefaultDownload
         private
 
             def download_zip
-                execute "wget -c #{uri} -P #{pkg_dl_dir}"
+                execute "wget -c #{uri[0].uri} -P #{pkg_dl_dir}"
             end
 
             def do_download_clean
@@ -32,7 +32,7 @@ module DefaultDownload
             end
 
             def do_download
-                case uri_type
+                case uri[0].uri_type
                     when "zip"
                         print_debug "Zip package"
                         download_zip()

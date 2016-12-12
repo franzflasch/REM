@@ -27,6 +27,28 @@ $global_sw_package
 def sw_package; return $global_sw_package; end
 def sw_package_set(pkg); $global_sw_package = pkg; end
 
+class PackageUri
+    public
+        attr_reader :uri
+        attr_reader :uri_type
+        attr_reader :uri_src_rev
+
+        def initialize(init_val)
+                @uri = init_val
+        end
+
+        def parse_uri
+            # set uri type:
+            tmp_uri_arr = uri
+            @uri = uri.split(";")[0]
+            if((@uri_type = parse_string(tmp_uri_arr, "type=")) == "undefined")
+                @uri_type = get_extension_from_uri(uri)
+            end
+            @uri_src_rev = parse_string(tmp_uri_arr, "src_rev=")
+        end
+end
+
+
 module PackageDescriptor
     public
             # package name
@@ -56,14 +78,14 @@ module PackageDescriptor
         attr_reader :defs
 
         attr_reader :uri
-        attr_reader :uri_type
-        attr_reader :uri_src_rev
 
         attr_reader :arch
         attr_reader :mach
         attr_reader :global_defines
         attr_reader :global_linker_flags
         attr_reader :linker_script
+
+        attr_reader :instance_var_to_reset
 
         # pkg_work_dir: work directory
         attr_reader :pkg_work_dir
@@ -78,6 +100,7 @@ module PackageDescriptor
 
         ### SETTERS ###
 
+        # No ARRAY values
         def set_name(name)
             @name = name
         end
@@ -86,10 +109,38 @@ module PackageDescriptor
             @unique_hash = hash
         end
 
-        def set_version(version)
-            @version = version
+        # ARRAY values - (only the first one is used)
+        def set_uri(uri)
+            tmp_str = string_strip(uri).strip
+            (@uri = []).concat([PackageUri.new(tmp_str)])
         end
 
+        def set_work_dir(workdir_str)
+            tmp_str = string_strip(workdir_str).strip
+            (@pkg_work_dir = []).concat(string_strip_to_array("#{pkg_build_dir}/#{tmp_str}"))
+        end
+
+        def set_arch(arch)
+            (@arch = []).concat(string_strip_to_array(arch))
+        end
+
+        def set_mach(mach)
+            (@mach = []).concat(string_strip_to_array(mach))
+        end
+
+        def set_version(version)
+            (@version = []).concat(string_strip_to_array(version))
+        end
+
+        def set_linker_script(script)
+           (@linker_script = []).concat(string_strip_to_array(script))
+        end
+
+        def set_build_specific_data(data)
+            (@build_specific_data = []).concat([data])
+        end
+
+        # full ARRAY values
         def set_src(src)
             (@srcs ||= []).concat(string_strip_to_array(src))
         end
@@ -107,55 +158,57 @@ module PackageDescriptor
         end
 
         def set_def(define)
-            (@defs ||= []).push(string_strip(define))
-        end
-
-        def set_uri(uri)
-            @uri = string_strip(uri).strip
-        end
-
-        def set_arch(arch)
-            @arch = string_strip(arch).strip
-        end
-
-        def set_mach(mach)
-            @mach = string_strip(mach).strip
+            (@defs ||= []).concat(string_strip_to_array(define))
         end
 
         def set_global_define(define)
-            (@global_defines ||= []).push(define)
+            (@global_defines ||= []).concat(string_strip_to_array(define))
         end
 
         def set_global_linker_flags(flags)
-            (@global_linker_flags ||= []).push(flags)
+            (@global_linker_flags ||= []).concat(string_strip_to_array(flags))
         end
 
-        def set_linker_script(script)
-            @linker_script = string_strip(script).strip
+        def reset_var(var)
+           (@instance_var_to_reset ||= []).concat(string_strip_to_array(var))
         end
 
-        def set_work_dir(workdir_str)
-            tmp_str = string_strip(workdir_str).strip
-            @pkg_work_dir =  "#{pkg_build_dir}/#{tmp_str}"
+
+
+        ### GETTERS ###
+        def get_download_state_file()
+            return "#{pkg_dl_state_dir}"
         end
 
-        def set_download_specific_data(data)
-            @download_specific_data = data
+        def get_package_state_file(which)
+            return "#{pkg_state_dir}/#{which}"
         end
 
-        def set_prepare_specific_data(data)
-            @prepare_specific_data = data
+        # Returns the name as array-list
+        def get_name_splitted
+            return name.split
         end
 
-        def set_patch_specific_data(data)
-            @patch_specific_data = data
+        def get_pkg_work_dir
+            return pkg_work_dir[0].strip()
         end
 
-        def set_build_specific_data(data)
-            @build_specific_data = data
+        # Returns first arch entry in array list
+        def get_arch
+            return arch[0].strip()
+        end
+
+        def get_mach
+            return mach[0].strip()
+        end
+
+        def get_build_specific_data
+            return build_specific_data[0]
         end
 
     private
+        ### Private set methods
+
         def default_setup_identifiers(recipe_file)
             # Extract the name of the package from the recipe name
             set_name(get_filename_without_extension_from_uri(recipe_file))
@@ -170,38 +223,39 @@ module PackageDescriptor
             @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}_#{unique_hash}"
             @pkg_state_dir = "#{global_config.get_state_dir()}/#{name}_#{unique_hash}"
             @pkg_build_dir = "#{global_config.get_build_dir()}/#{name}_#{unique_hash}"
-            @pkg_work_dir = pkg_build_dir
+            @pkg_work_dir = [pkg_build_dir]
 
-            @version = "noversion"
+            @version = set_version("noversion")
             @srcs = []
             @incdirs = []
             @patches = []
             @deps = []
             @defs = []
 
-            @uri = "package.local"
+            @uri = [PackageUri.new("package.local")]
 
-            @arch = "generic"
-            @mach = "generic"
+            @arch = set_arch("generic")
+            @mach = set_mach("generic")
             @global_defines = []
             @global_linker_flags = []
-            @linker_script = ""
+            @linker_script = set_linker_script("")
+
+            @instance_var_to_reset = []
+
+            @build_specific_data = set_build_specific_data(nil)
         end
 
-        def parse_uri
-            # set uri type:
-            tmp_uri_arr = uri
-            @uri = uri.split(";")[0]
-            if((@uri_type = parse_string(tmp_uri_arr, "type=")) == "undefined")
-                @uri_type = get_extension_from_uri(uri)
-            end
-            @uri_src_rev = parse_string(tmp_uri_arr, "src_rev=")
+        def set_download_done()
+            execute "touch #{pkg_dl_state_dir}"
+        end
+
+        def set_state_done(which)
+            execute "touch #{pkg_state_dir}/#{which}"
         end
 end
 
 
 class SoftwarePackage
-
     include PackageDescriptor
 
     public
@@ -233,14 +287,12 @@ class SoftwarePackage
             @inc_dirs_prepared = []
             @inc_dirs_depends_prepared = []
 
-            parse_uri()
+            @uri[0].parse_uri()
 
             # Make sanity checks here:
             check_duplicates_exit_with_error(deps, "deps in package #{name}")
             check_duplicates_exit_with_error(srcs, "srcs in package #{name}")
         end
-
-    public
 
         def post_initialize
 
@@ -265,7 +317,7 @@ class SoftwarePackage
                     print_abort("Package download_type #{patch_specific_data.class.name} not known")
             end
 
-            case "#{build_specific_data.class.name}"
+            case "#{build_specific_data[0].class.name}"
                 when "NilClass"
                     extend Default::Compile
                     extend Default::Link
@@ -274,35 +326,10 @@ class SoftwarePackage
                     extend MakePkg::Compile
                     extend MakePkg::Link
                     extend MakePkg::Image
-                    print_any_yellow("Using class #{build_specific_data.class.name} for package #{name}")
+                    print_any_yellow("Using class #{build_specific_data[0].class.name} for package #{name}")
                 else
-                    print_abort("Package build_type #{build_specific_data.class.name} not known")
+                    print_abort("Package build_type #{build_specific_data[0].class.name} not known")
             end
-        end
-
-    private
-        ### Private set methods
-        def set_download_done()
-            execute "touch #{pkg_dl_state_dir}"
-        end
-
-        def set_state_done(which)
-            execute "touch #{pkg_state_dir}/#{which}"
-        end
-
-    public
-        ### GETTERS ###
-        def get_download_state_file()
-            return "#{pkg_dl_state_dir}"
-        end
-
-        def get_package_state_file(which)
-            return "#{pkg_state_dir}/#{which}"
-        end
-
-        # Returns the name as array-list
-        def get_name_splitted
-            return name.split
         end
 end
 

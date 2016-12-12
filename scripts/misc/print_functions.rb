@@ -24,6 +24,10 @@ def print_debug(text)
     end
 end
 
+def print_any_cyan(text)
+    puts "\033[36m#{text}\033[0m\n"
+end
+
 def print_any_green(text)
     puts "\033[32m#{text}\033[0m\n"
 end

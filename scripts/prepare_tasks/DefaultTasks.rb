@@ -30,21 +30,21 @@ module DefaultPrepare
             end
 
             def prepare_clone_git
-                execute "git clone #{uri} #{pkg_build_dir}"
-                if(uri_src_rev != "undefined")
-                    execute "git --git-dir=#{pkg_build_dir}/.git --work-tree=#{pkg_build_dir} checkout #{uri_src_rev}"
+                execute "git clone #{uri[0].uri} #{pkg_build_dir}"
+                if(uri[0].uri_src_rev != "undefined")
+                    execute "git --git-dir=#{pkg_build_dir}/.git --work-tree=#{pkg_build_dir} checkout #{uri[0].uri_src_rev}"
                 end
             end
 
             def prepare_checkout_svn
-                execute "svn co #{uri} #{pkg_build_dir}"
-                if(uri_src_rev != "undefined")
+                execute "svn co #{uri[0].uri} #{pkg_build_dir}"
+                if(uri[0].uri_src_rev != "undefined")
                     # TODO: add possibilty to checkout specific revision
                 end
             end
 
             def prepare_zip
-                execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri(uri)} -d #{pkg_build_dir}"
+                execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri(uri[0].uri)} -d #{pkg_build_dir}"
             end
 
             def do_prepare_clean
@@ -52,7 +52,7 @@ module DefaultPrepare
             end
 
             def do_prepare_builddir
-                case uri_type
+                case uri[0].uri_type
                     when "local"
                         print_debug "LOCAL package"
                     when "zip"

@@ -56,26 +56,12 @@ def prepare_recipes(recipes, append=false)
             cur_pkg = SoftwarePackage.new(r)
         end
 
-        # # Iterate and set instance variables:
-        # cur_pkg.instance_variables.each do |var|
-        #     print(var)
-        #     #cur_pkg.instance_variable_set(var, 'foobar')
-        #     print("\n")
-        #     print(cur_pkg.instance_variable_get(var).inspect)
-        #     print("\n")
-
-        #     if cur_pkg.instance_variable_get(var).kind_of?(Array)
-        #         printf("ARRAY!")
-        #     end
-        # end
-
         pkgs.push(cur_pkg)
     end
     return pkgs
 end
 
 def merge_recipes_append(recipe_list, append_recipe_list)
-
     append_recipe_list.each do |append_pkg|
         print_any_yellow(append_pkg.name)
         tmp_pkg = pkg_get_ref_by_name(recipe_list, append_pkg.name)
@@ -84,27 +70,37 @@ def merge_recipes_append(recipe_list, append_recipe_list)
             print_any_yellow("Could not find matching base recipe for append recipe " + append_pkg.name)
         else
             print_any_yellow(tmp_pkg.name)
-            # rewrite linkerscript
-            tmp_pkg.instance_variable_set(:@linker_script, append_pkg.instance_variable_get(:@linker_script))
-            # Iterate and set instance variables:
+
+            # Iterate through instance_var_to_reset and reset all instance variables listed in this array
+            vars_to_reset = append_pkg.instance_variable_get(:@instance_var_to_reset)
+            if nil!=vars_to_reset
+                vars_to_reset.each do |var|
+                    print_any_cyan("Reset all in #{var}")
+                    if tmp_pkg.instance_variable_get("@#{var}").nil?
+                        print_abort("sw_package variable #{var} does not exist!")
+                    else
+                        print_any_cyan("Clearing #{var}, which was #{tmp_pkg.instance_variable_get("@#{var}")}")
+                        tmp_pkg.instance_variable_get("@#{var}").clear
+                    end
+                end
+                print_any_cyan("Clearing instance_var_to_reset which was #{append_pkg.instance_variable_get(:@instance_var_to_reset)}")
+                append_pkg.instance_variable_get(:@instance_var_to_reset).clear
+            end
+
+            # Now merge the append recipe instance variables with the base recipe
             append_pkg.instance_variables.each do |var|
-                # print(var)
-                # #cur_pkg.instance_variable_set(var, 'foobar')
-                # print("\n")
-                print_any_yellow(append_pkg.instance_variable_get(var).inspect)
-                # print("\n")
+                print_any_yellow("#{var} before appending: #{tmp_pkg.instance_variable_get("#{var}")}")
 
                 # At the moment only array types will get appended
                 if tmp_pkg.instance_variable_get(var).kind_of?(Array)
                     val_to_append = append_pkg.instance_variable_get(var)
                     tmp_pkg.instance_variable_get(var).concat(val_to_append)
                     print_any_yellow("Appending #{var} #{val_to_append} to recipe #{tmp_pkg.name}")
-                    print_any_yellow(tmp_pkg.instance_variable_get(var.to_s))
+                    print_any_cyan("#{var} is now #{tmp_pkg.instance_variable_get("#{var}")}")
                 end
             end
         end
     end
-
     print_any_yellow("Merging append recipes done.")
 end
 
@@ -112,8 +108,8 @@ def filter_packages(pkg_list, current_arch_config, current_mach_config)
     tmp_pkg_list = []
     pkg_list.each_with_index do |cur_pkg, index|
         # Filter out packages which do not match arch or mach config
-        arch_config = cur_pkg.arch
-        mach_config = cur_pkg.mach
+        arch_config = cur_pkg.get_arch()
+        mach_config = cur_pkg.get_mach()
 
         if ( (arch_config == "generic") or 
              (arch_config == current_arch_config and mach_config == "generic")  or 
@@ -122,7 +118,6 @@ def filter_packages(pkg_list, current_arch_config, current_mach_config)
             tmp_pkg_list.push(cur_pkg)
         else
             print_debug "ARCH Config #{arch_config} or MACH Config #{mach_config} does not match - current arch config: #{current_arch_config} - current mach config: #{current_mach_config}, skipping recipe: #{cur_pkg.name}"
-            #pkg_list.delete_at(index)
         end
     end
 

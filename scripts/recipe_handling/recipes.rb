@@ -63,13 +63,12 @@ end
 
 def merge_recipes_append(recipe_list, append_recipe_list)
     append_recipe_list.each do |append_pkg|
-        print_any_yellow(append_pkg.name)
         tmp_pkg = pkg_get_ref_by_name(recipe_list, append_pkg.name)
 
         if tmp_pkg == nil
             print_any_yellow("Could not find matching base recipe for append recipe " + append_pkg.name)
         else
-            print_any_yellow(tmp_pkg.name)
+            print_any_yellow("Appending #{tmp_pkg.name}")
 
             # Iterate through instance_var_to_reset and reset all instance variables listed in this array
             vars_to_reset = append_pkg.instance_variable_get(:@instance_var_to_reset)

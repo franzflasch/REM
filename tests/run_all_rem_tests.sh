@@ -8,7 +8,7 @@ BUILD_ITEM_RESULT=()
 
 for f in $BASEDIR/tests/TEST_*.sh ; 
 do
-	exec $f $REM_PATH
+	$f $REM_PATH
 	BUILD_ITEM_RESULT+=("$?")
 	BUILD_ITEM_NAME+=("$f")
 done

@@ -12,4 +12,4 @@ RUN apt-get install -y rake gcc-arm-none-eabi gcc-avr avr-libc git subversion un
 
 RUN git clone https://github.com/franzflasch/REM.git
 
-RUN ./home/rem_build/REM/tests/run_all_rem_tests.sh /home/rem_build/REM
+RUN /bin/bash -c "/home/rem_build/REM/tests/run_all_rem_tests.sh /home/rem_build/REM"

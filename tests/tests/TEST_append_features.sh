@@ -12,4 +12,4 @@ rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_recipe_testing/avr_
 rm -rf rem_workdir
 
 rm -rf rem_packages
-rm -rf rem_test_project
+rm -rf rem_recipe_testing

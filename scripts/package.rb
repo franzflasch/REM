@@ -60,8 +60,8 @@ module PackageDescriptor
         attr_reader :base_dir
         # pkg_dl_dir: download location
         attr_reader :pkg_dl_dir
-        # pkg_dl_state_dir: download state file location
-        attr_reader :pkg_dl_state_dir
+        # pkg_dl_state_file: download state file location
+        attr_reader :pkg_dl_state_file
         # pkg_build_dir: build directory
         attr_reader :pkg_build_dir
         # pkg_deploy_dir: output binary deploy directory
@@ -176,10 +176,6 @@ module PackageDescriptor
 
 
         ### GETTERS ###
-        def get_download_state_file()
-            return "#{pkg_dl_state_dir}"
-        end
-
         def get_package_state_file(which)
             return "#{pkg_state_dir}/#{which}"
         end
@@ -219,7 +215,7 @@ module PackageDescriptor
 
         def default_setup_settables()
             @pkg_dl_dir = "#{global_config.get_dl_dir()}/#{name}_#{unique_hash}"
-            @pkg_dl_state_dir = "#{global_config.get_dl_state_dir()}/#{name}_#{unique_hash}"
+            @pkg_dl_state_file = "#{global_config.get_dl_state_dir()}/#{name}_#{unique_hash}"
             @pkg_deploy_dir = "#{global_config.get_deploy_dir()}/#{name}_#{unique_hash}"
             @pkg_state_dir = "#{global_config.get_state_dir()}/#{name}_#{unique_hash}"
             @pkg_build_dir = "#{global_config.get_build_dir()}/#{name}_#{unique_hash}"
@@ -246,7 +242,7 @@ module PackageDescriptor
         end
 
         def set_download_done()
-            execute "touch #{pkg_dl_state_dir}"
+            execute "touch #{pkg_dl_state_file}"
         end
 
         def set_state_done(which)

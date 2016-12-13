@@ -27,7 +27,6 @@ if(SIMPLECOV == "1")
     SimpleCov.start
 end
 
-
 # Machine and compiler specific
 require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
 require_relative "scripts/compile_tasks/#{global_config.compiler}_tasks/DefaultTasks"
@@ -86,7 +85,6 @@ namespace :package do
         if remappend_recipes != nil
             temp_pkgs_append = prepare_recipes(remappend_recipes, true)
             merge_recipes_append(temp_pkgs, temp_pkgs_append)
-            #temp_pkgs_append = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
         end
 
         temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
@@ -183,7 +181,7 @@ namespace :package do
                 # As this is the first task in the chain create work directories here:
                 Rake::Task["package:create_workdir"].invoke()
 
-                file "#{pkg_ref.get_download_state_file()}" do
+                file "#{pkg_ref.pkg_dl_state_file}" do
                     print_any_green "Downloading #{pkg_ref.name}..."
                     pkg_ref.download()
                 end
@@ -193,7 +191,7 @@ namespace :package do
             task :download do
                 print_debug("download: #{pkg.name}")
                 create_download_file_task(pkg, global_package_list, 0)
-                Rake::Task["#{pkg.get_download_state_file()}"].invoke()
+                Rake::Task["#{pkg.pkg_dl_state_file}"].invoke()
             end
 
 

@@ -36,7 +36,7 @@ def package_add_file_task_dep(package_list, dependency_list, which, pkg_name)
         dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_name)
         case which
             when "download"
-                    dep_str_array.push("#{dep_ref.get_download_state_file()}")
+                    dep_str_array.push("#{dep_ref.pkg_dl_state_file}")
             else
                     dep_str_array.push("#{dep_ref.get_package_state_file("#{which}")}")
         end

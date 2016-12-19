@@ -127,4 +127,7 @@ WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER="tes
     - STM32F4
 * SILABS
     - C8051FXXX
-
+* Nordic Semiconductor
+    - nrf24le1_24
+    - nrf24le1_32
+    - nrf24le1_48

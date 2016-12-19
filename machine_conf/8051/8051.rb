@@ -20,4 +20,4 @@
 
 global_config.set_compiler("sdcc")
 global_config.set_obj_extension("rel")
-global_config.set_compile_flag("--opt-code-size --Werror")
+global_config.set_compile_flag("--opt-code-size --stack-auto --Werror")

@@ -119,6 +119,16 @@ There is also a little script which helps checking if there are any superfluous 
 WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER="test_project rem_packages" PACKAGE_NAME=test_project check_deps.sh
 ```
 
+## Find unused functions and auto comment them to save space
+This is especially for some compilers like sdcc, as they may do not have an option to auto remove them:
+use it like this:
+comment_unused_functions_cppcheck.sh folder_to_check "folders_to_exclude_from_check_separated_with_spaces"
+```Shell
+comment_unused_functions_cppcheck.sh . "nrf24le1_sdk_nohash/"
+```
+After the successful execution you should reinvoke the rem build command to rebuild the image. The file should be appreciably smaller if many functions were removed.
+
+
 ## Supported microcontrollers
 * Atmel Atmega168
 * STMicroelectronics:

@@ -4,7 +4,7 @@ REM_PATH=$1
 
 echo REMPATH $REM_PATH
 export PATH=$REM_PATH:$PATH
-export PATH=$REM_PATH/misc_scripts:$PATH
+export PATH=$REM_PATH/shell_scripts:$PATH
 
 git clone https://github.com/franzflasch/rem_packages.git
 git clone https://github.com/franzflasch/rem_test_project.git

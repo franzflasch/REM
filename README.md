@@ -19,37 +19,32 @@ REM is a Yocto like buildsystem primarily intended for microcontrollers. It is b
     - Debian (at least 8 "jessie")
     - Ubuntu (at least 14.04 "Trusty Tahr")
 
-## 1. Install rake
+## 1. Install dependencies
 ```Shell
-sudo apt-get install rake
+sudo apt-get install rake gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python sdcc sdcc-libraries cppcheck
 ```
 
-## 2. Install other dependencies
-```Shell
-sudo apt-get install gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python
-```
-
-## 3. Fetch REM buildsystem
+## 2. Fetch REM buildsystem
 ```Shell
 mkdir rem_build
 cd rem_build
 git clone https://github.com/franzflasch/REM.git
 ```
 
-## 4. Prepare test project
+## 3. Prepare test project
 ```Shell
 git clone https://github.com/franzflasch/rem_packages.git
 git clone https://github.com/franzflasch/rem_test_project.git
 ```
 
-## 5. Prepare PATH
+## 4. Prepare PATH
 ```Shell
 cd REM
 export PATH=`pwd`:$PATH
 cd ..
 ```
 
-## 6. Start build
+## 5. Start build
 
 ### Atmel Atmega168
 ```Shell
@@ -61,9 +56,9 @@ rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_test_project" -m -j
 rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[bin]
 ```
 
-### SILABS C8051FXXX
+### NORDIC Semiconductor nrf24le1_32
 ```Shell
-rem ARCH=8051 MACH=C8051FXXX PROJECT_FOLDER="rem_packages rem_test_project_sdcc" -m -j4 package:test_project:image[hex]
+rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
 ```
 
 The image will end up in rem_workdir/#{arch}_#{machine}/deploy

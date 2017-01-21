@@ -10,6 +10,11 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y
 RUN apt-get install -y rake gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python sdcc sdcc-libraries cppcheck
 
+# Install mips toolchain manually, as there is no apt-get package available:
+RUN wget https://community.imgtec.com/?do-download=53163 -O mips_toolchain.tar.gz
+RUN tar xvf mips_toolchain.tar.gz
+ENV PATH /home/rem_build/2016.05-03/bin/:$PATH
+
 RUN git clone https://github.com/franzflasch/REM.git
 
 RUN /bin/bash -c "/home/rem_build/REM/tests/run_all_rem_tests.sh /home/rem_build/REM"

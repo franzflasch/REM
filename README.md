@@ -141,3 +141,5 @@ After the successful execution you should reinvoke the rem build command to rebu
     - nrf24le1_24
     - nrf24le1_32
     - nrf24le1_48
+* Microchip
+	- PIC32MX2

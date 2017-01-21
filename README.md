@@ -61,6 +61,11 @@ rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 
 rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
 ```
 
+### Microchip PIC32MX2
+```Shell
+rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec]
+```
+
 The image will end up in rem_workdir/#{arch}_#{machine}/deploy
 It will be either a binary or hex image, depending on what you've chosen to build.
 

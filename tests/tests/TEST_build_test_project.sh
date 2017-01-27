@@ -21,6 +21,8 @@ rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER="rem_packages rem_test_project" -m
 rm -rf rem_workdir
 rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec] VERBOSE=1 && echo OK || exit 5
 rm -rf rem_workdir
+rem ARCH=mips MACH=pic32mz2048 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec] VERBOSE=1 && echo OK || exit 5
+rm -rf rem_workdir
 
 rm -rf rem_packages
 rm -rf rem_test_project

@@ -66,6 +66,11 @@ rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER="rem_packages rem_test_project" -m
 rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec]
 ```
 
+### Microchip PIC32MZ2048
+```Shell
+rem ARCH=mips MACH=pic32mz2048 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec]
+```
+
 The image will end up in rem_workdir/#{arch}_#{machine}/deploy
 It will be either a binary or hex image, depending on what you've chosen to build.
 
@@ -128,7 +133,6 @@ comment_unused_functions_cppcheck.sh . "nrf24le1_sdk_nohash/"
 ```
 After the successful execution you should reinvoke the rem build command to rebuild the image. The file should be appreciably smaller if many functions were removed.
 
-
 ## Supported microcontrollers
 * Atmel Atmega168
 * STMicroelectronics:
@@ -142,5 +146,5 @@ After the successful execution you should reinvoke the rem build command to rebu
     - nrf24le1_32
     - nrf24le1_48
 * Microchip
-	- PIC32MX2
-
+    - PIC32MX2
+    - PIC32MZ2048

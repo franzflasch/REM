@@ -6,7 +6,7 @@ require 'rake_embedded/version'
 Gem::Specification.new do |spec|
   spec.name          = "rake_embedded"
   spec.licenses      = ['GPL-3.0']
-  spec.version       = RemGem::VERSION
+  spec.version       = RakeEmbedded::VERSION
   spec.authors       = ["Franz Flasch"]
   spec.email         = ["franz.flasch@gmx.at"]
   spec.summary       = "Embedded C buildsystem for microcontrollers" 

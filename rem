@@ -24,7 +24,7 @@ begin
   require 'rem_path'
 rescue LoadError
   puts "rem_path.rb was not found. REM is probably not installed as a gem package. Trying relative path."
-  require_relative '../lib/rem_path'
+  require_relative 'rem_path'
 end
 
 args_string = ARGV.join(" ")

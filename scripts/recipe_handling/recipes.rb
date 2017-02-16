@@ -19,7 +19,7 @@
 =end
 
 def get_recipes(project_folders, recipe_file_ending)
-    project_folders = project_folders.split(" ")
+    project_folders = project_folders.split(",")
     files = []
     files = find_files_with_ending(project_folders, recipe_file_ending)
 

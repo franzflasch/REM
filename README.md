@@ -48,27 +48,27 @@ cd ..
 
 ### Atmel Atmega168
 ```Shell
-rem ARCH=avr MACH=atmega168 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
+rem ARCH=avr MACH=atmega168 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:image[hex]
 ```
 
 ### STMicroelectronics STM32F3
 ```Shell
-rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[bin]
+rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:image[bin]
 ```
 
 ### NORDIC Semiconductor nrf24le1_32
 ```Shell
-rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER="rem_packages rem_test_project" -m -j4 package:test_project:image[hex]
+rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:image[hex]
 ```
 
 ### Microchip PIC32MX2
 ```Shell
-rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec]
+rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER=rem_test_project,rem_libopenpic32,rem_packages package:test_project:image[srec]
 ```
 
 ### Microchip PIC32MZ2048
 ```Shell
-rem ARCH=mips MACH=pic32mz2048 PROJECT_FOLDER="rem_test_project rem_libopenpic32 rem_packages" package:test_project:image[srec]
+rem ARCH=mips MACH=pic32mz2048 PROJECT_FOLDER=rem_test_project,rem_libopenpic32,rem_packages package:test_project:image[srec]
 ```
 
 The image will end up in rem_workdir/#{arch}_#{machine}/deploy
@@ -83,7 +83,7 @@ After the successful build you can flash the image with the right tool for your 
 
 ## Verbose output:
 ```Shell
-rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER="package test_project" -m -j4 package:test_project:image[bin] VERBOSE=1
+rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER=package,test_project -m -j4 package:test_project:image[bin] VERBOSE=1
 ```
 
 ## Load the hex file into an atmega168 microcontroller.
@@ -93,35 +93,35 @@ avrdude -F -cstk500v2 -P/dev/ttyUSB0 -patmega168p -Uflash:w:workdir/avr_atmega16
 
 ## List all available packages for this architecture:
 ```Shell
-rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:list_packages
+rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER=package package:list_packages
 ```
 
 ## Get a list of dependencies for a particular package:
 ```Shell
-rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER="package" package:msglib_test:depends_chain_print
+rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER=package package:msglib_test:depends_chain_print
 ```
 
 ## Generating a "remfile"
 It is also possible to generate a package specific "remfile", in which all infos about the package and its dependencies are stored. This should increase the speed of the whole build process, as it is not needed to reparse all recipes when starting a new build.
 ```Shell
-rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:test_project:remfile_generate
+rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER=package,test_project package:test_project:remfile_generate
 ```
 
 ## Clean remfile
 ```Shell
-rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:remfile_clean
+rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER=package,test_project package:remfile_clean
 ```
 
 ## simplecov code coverage - check the codecoverage of the rem buildsystem itself
 ```Shell
-rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER="package test_project" package:test_project:image[bin] SIMPLECOV=1
+rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER=package,test_project package:test_project:image[bin] SIMPLECOV=1
 ```
 The output will be placed in a folder called 'coverage'
 
 ## Dependency Check
 There is also a little script which helps checking if there are any superfluous dependencies set:
 ```Shell
-WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER="test_project rem_packages" PACKAGE_NAME=test_project check_deps.sh
+WORKDIR=/home/user/Desktop/rem_workdir ARCH=arm MACH=stm32f3 PROJECT_FOLDER=test_project,rem_packages PACKAGE_NAME=test_project check_deps.sh
 ```
 
 ## Find unused functions and auto comment them to save space

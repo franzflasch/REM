@@ -21,14 +21,12 @@ REM is a Yocto like buildsystem primarily intended for microcontrollers. It is b
 
 ## 1. Install dependencies
 ```Shell
-sudo apt-get install rake gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python sdcc sdcc-libraries cppcheck
+sudo apt-get install rubygems gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python sdcc sdcc-libraries cppcheck
 ```
 
-## 2. Fetch REM buildsystem
+## 2. Install REM buildsystem
 ```Shell
-mkdir rem_build
-cd rem_build
-git clone https://github.com/franzflasch/REM.git
+sudo gem install rake_embedded
 ```
 
 ## 3. Prepare test project
@@ -37,14 +35,7 @@ git clone https://github.com/franzflasch/rem_packages.git
 git clone https://github.com/franzflasch/rem_test_project.git
 ```
 
-## 4. Prepare PATH
-```Shell
-cd REM
-export PATH=`pwd`:$PATH
-cd ..
-```
-
-## 5. Start build
+## 4. Start build
 
 ### Atmel Atmega168
 ```Shell

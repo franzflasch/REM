@@ -62,6 +62,11 @@ rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER=rem_test_project,rem_libopenpic32,rem
 rem ARCH=mips MACH=pic32mz2048 PROJECT_FOLDER=rem_test_project,rem_libopenpic32,rem_packages package:test_project:image[srec]
 ```
 
+### Native (Build Host) Linux
+```Shell
+rem ARCH=native MACH=linux PROJECT_FOLDER=rem_test_project,rem_packages package:test_project:link
+```
+
 The image will end up in rem_workdir/#{arch}_#{machine}/deploy
 It will be either a binary or hex image, depending on what you've chosen to build.
 

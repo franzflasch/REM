@@ -37,7 +37,7 @@ module DefaultPrepare
             end
 
             def prepare_checkout_svn
-                execute "svn co #{uri[0].uri} #{pkg_build_dir}"
+                execute "svn co --non-interactive --trust-server-cert #{uri[0].uri} #{pkg_build_dir}"
                 if(uri[0].uri_src_rev != "undefined")
                     # TODO: add possibilty to checkout specific revision
                 end

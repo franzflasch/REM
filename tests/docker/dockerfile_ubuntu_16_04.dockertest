@@ -1,7 +1,7 @@
 #
 # Super simple example of a Dockerfile
 #
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 WORKDIR /home/rem_build
 

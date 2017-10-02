@@ -8,6 +8,7 @@ services:
 env:
   matrix:
     - OS_TYPE=debian OS_VERSION=8
+    - OS_TYPE=debian OS_VERSION=9
     - OS_TYPE=ubuntu OS_VERSION=14_04
     - OS_TYPE=ubuntu OS_VERSION=16_04
 

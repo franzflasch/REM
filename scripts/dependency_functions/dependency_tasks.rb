@@ -72,7 +72,7 @@ def package_get_dependency_list(package_list, pkg, dep_list)
     end
     pkg.deps.each do |dep|
         dep_ref = pkg_get_ref_by_name(package_list, dep, pkg.name)
-        get_dependency_list(package_list, dep_ref, dep_list)
+        package_get_dependency_list(package_list, dep_ref, dep_list)
     end
 end
 

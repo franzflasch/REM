@@ -106,19 +106,28 @@ namespace :package do
 
     global_package_list = temp_pkgs
 
+    # We get a list of all dependencies of the global dependencies
+    # so that we eclude these from adding the global one
+    # otherwise we would get a lot of circular dependencies
     glob_dep_list_to_exclude = []
     global_config.get_global_deps.each do |glob_dep|
         package_get_dependency_list(global_package_list, pkg_get_ref_by_name(global_package_list, glob_dep, glob_dep), glob_dep_list_to_exclude)
-        print_any_green(glob_dep_list_to_exclude)
+        print_any_green("global_deps for #{glob_dep} #{glob_dep_list_to_exclude}")
     end
 
     global_package_list.each do |pkg|
 
         namespace :"#{pkg.name}" do
 
-            # Add global dependency if exists
+            # Check if the current package is not the one we are adding
+            # also we need to check if the current one is included in the 'excluded' list
+            # we also need to ensure, that we do not set the global dependency to
+            # another package which is also a global dependency, otherwise we would get
+            # a circular dependency if we would set 2 global dependencies
             global_config.get_global_deps.each do |glob_dep|
-                if((glob_dep != pkg.name) && (!glob_dep_list_to_exclude.include?(pkg.name)))
+                if((glob_dep != pkg.name) && 
+                   (!glob_dep_list_to_exclude.include?(pkg.name)) && 
+                   (!global_config.get_global_deps.include?(pkg.name)) )
                     pkg.set_dep(glob_dep)
                 end
             end

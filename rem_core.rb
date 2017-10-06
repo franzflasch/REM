@@ -47,11 +47,6 @@ else
     print_abort("No valid machine conf found!")
 end
 
-# Machine and compiler specific
-#require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
-#require_relative "scripts/compile_tasks/#{global_config.compiler}_tasks/DefaultTasks"
-#require_relative "scripts/compile_tasks/make_tasks/MakeTasks"
-
 # Prepare and Patch tasks:
 require_relative "scripts/download_tasks/DefaultTasks"
 require_relative "scripts/prepare_tasks/DefaultTasks"

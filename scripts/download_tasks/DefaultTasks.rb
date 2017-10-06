@@ -23,8 +23,10 @@ module DefaultDownload
 
         private
 
-            def download_zip
-                execute "wget -c #{uri[0].uri} -P #{pkg_dl_dir}"
+            def download_compressed_file
+                #execute "wget -c #{uri[0].uri} -P #{pkg_dl_dir}"
+                FileUtils.mkdir_p("#{pkg_dl_dir}")
+                execute "curl -o #{pkg_dl_dir}/#{get_filename_from_uri(uri[0].uri)} -LOk #{uri[0].uri}"
             end
 
             def do_download_clean
@@ -35,7 +37,10 @@ module DefaultDownload
                 case uri[0].uri_type
                     when "zip"
                         print_debug "Zip package"
-                        download_zip()
+                        download_compressed_file()
+                    when "gz"
+                        print_debug "GZ package"
+                        download_compressed_file()
                     else
                         print_debug('No zip package, falling through...')
                 end

@@ -40,6 +40,7 @@ class GlobalConfig
     attr_reader :remfile
 
     attr_reader :prefix
+    attr_reader :compiler_dir
     attr_reader :compiler
     attr_reader :obj_cp
     attr_reader :defines
@@ -48,7 +49,7 @@ class GlobalConfig
     attr_reader :compiler_obj_extension
     attr_reader :obj_copy_flags
 
-    attr_reader :cc_prefix
+    attr_reader :deps
 
     def initialize()
         @rakefile_dir = ""
@@ -68,6 +69,7 @@ class GlobalConfig
         @remfile = "#{BUILD_DIR}/pkgs.rem_file"
 
         @prefix = ""
+        @compiler_dir = ""
         @compiler = ""
         @obj_cp = ""
         @defines = []
@@ -76,7 +78,7 @@ class GlobalConfig
         @compiler_obj_extension = "o"
         @obj_copy_flags = []
 
-        @cc_prefix = ""
+        @deps = []
     end
 
     # The getter methods should be considered as 'public' and
@@ -127,19 +129,11 @@ class GlobalConfig
     end
 
     def get_compiler
-        if prefix.nil? || prefix.empty?
-            return "#{compiler}"
-        else
-            return "#{prefix}-#{compiler}"
-        end
+        return "#{compiler_dir}#{prefix}#{compiler}"
     end
 
     def get_obj_cp
-        if prefix.nil? || prefix.empty?
-            return "#{obj_cp}"
-        else
-            return "#{prefix}-#{obj_cp}"
-        end
+        return "#{prefix}#{obj_cp}"
     end
 
     def get_defines
@@ -181,6 +175,10 @@ class GlobalConfig
         return obj_copy_flags_combined
     end
 
+    def get_global_deps
+        return deps
+    end
+
 
 
     # These are the setter methods. They should be considered as 'private'
@@ -192,6 +190,10 @@ class GlobalConfig
 
     def set_compiler_prefix(prefix)
         @prefix = prefix
+    end
+
+    def set_compiler_dir(dir)
+        @compiler_dir = dir
     end
 
     def set_compiler(compiler)
@@ -220,6 +222,10 @@ class GlobalConfig
 
     def set_objcopy_flag(flags)
         @obj_copy_flags.push(flags)
+    end
+
+    def set_global_dep(dep)
+        @deps.push(dep)
     end
 end
 

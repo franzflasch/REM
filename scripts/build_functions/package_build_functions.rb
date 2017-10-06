@@ -90,7 +90,8 @@ module PackageBuildFunctions
         def clean_download
             print_debug "cleaning download package #{name}"
             do_download_clean()
-            FileUtils.rm_rf("#{pkg_dl_state_dir}")
+            FileUtils.rm_rf("#{pkg_dl_dir}")
+            FileUtils.rm_rf("#{pkg_dl_state_file}")
         end
 
         def clean_prepare

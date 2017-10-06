@@ -47,6 +47,11 @@ module DefaultPrepare
                 execute "unzip -qq #{pkg_dl_dir}/#{get_filename_from_uri(uri[0].uri)} -d #{pkg_build_dir}"
             end
 
+            def prepare_gz
+                FileUtils.mkdir_p("#{pkg_build_dir}")
+                execute "tar -xvf #{pkg_dl_dir}/#{get_filename_from_uri(uri[0].uri)} -C #{pkg_build_dir}"
+            end
+
             def do_prepare_clean
                 FileUtils.rm_rf(pkg_build_dir)
             end
@@ -58,6 +63,9 @@ module DefaultPrepare
                     when "zip"
                         print_debug "ZIP package"
                         prepare_zip()
+                    when "gz"
+                        print_debug "GZ package"
+                        prepare_gz();
                     when "git"
                         print_debug "GIT repo"
                         prepare_clone_git()

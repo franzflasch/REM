@@ -65,3 +65,14 @@ def package_add_common_task_dep_list(package_list, task_list, file_task, pkg_nam
     end
     return dep_str_array
 end
+
+def package_get_dependency_list(package_list, pkg, dep_list)
+    if(pkg.deps.any?)
+        dep_list.concat(pkg.deps)
+    end
+    pkg.deps.each do |dep|
+        dep_ref = pkg_get_ref_by_name(package_list, dep, pkg.name)
+        get_dependency_list(package_list, dep_ref, dep_list)
+    end
+end
+

@@ -18,6 +18,10 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
+# Helper function
+require_relative "scripts/misc/helper"
+require_relative "scripts/misc/print_functions"
+
 # Global Config
 require_relative "scripts/global_config/global_config"
 
@@ -27,10 +31,26 @@ if(SIMPLECOV == "1")
     SimpleCov.start
 end
 
+# Try to find machine specific folders
+machine_conf_file = nil
+project_folders = global_config.get_project_folder.split(",")
+project_folders.each do |folder|
+    if File.file?("./#{folder}/machine_conf/machine/#{global_config.arch}/#{global_config.mach}.rb")
+        machine_conf_file = "./#{folder}/machine_conf/machine/#{global_config.arch}/#{global_config.mach}.rb"
+        break
+    end
+end
+
+if(machine_conf_file != nil)
+    load "#{machine_conf_file}"
+else
+    print_abort("No valid machine conf found!")
+end
+
 # Machine and compiler specific
-require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
-require_relative "scripts/compile_tasks/#{global_config.compiler}_tasks/DefaultTasks"
-require_relative "scripts/compile_tasks/make_tasks/MakeTasks"
+#require_relative "machine_conf/#{global_config.arch}/#{global_config.mach}"
+#require_relative "scripts/compile_tasks/#{global_config.compiler}_tasks/DefaultTasks"
+#require_relative "scripts/compile_tasks/make_tasks/MakeTasks"
 
 # Prepare and Patch tasks:
 require_relative "scripts/download_tasks/DefaultTasks"
@@ -38,8 +58,6 @@ require_relative "scripts/prepare_tasks/DefaultTasks"
 require_relative "scripts/patch_tasks/DefaultTasks"
 
 # Generic
-require_relative "scripts/misc/helper"
-require_relative "scripts/misc/print_functions"
 require_relative "scripts/package"
 require_relative "scripts/dependency_functions/dependency_tasks"
 require_relative "scripts/dependency_functions/dependency_graph"
@@ -93,9 +111,22 @@ namespace :package do
 
     global_package_list = temp_pkgs
 
+    glob_dep_list_to_exclude = []
+    global_config.get_global_deps.each do |glob_dep|
+        package_get_dependency_list(global_package_list, pkg_get_ref_by_name(global_package_list, glob_dep, glob_dep), glob_dep_list_to_exclude)
+        print_any_green(glob_dep_list_to_exclude)
+    end
+
     global_package_list.each do |pkg|
 
         namespace :"#{pkg.name}" do
+
+            # Add global dependency if exists
+            global_config.get_global_deps.each do |glob_dep|
+                if((glob_dep != pkg.name) && (!glob_dep_list_to_exclude.include?(pkg.name)))
+                    pkg.set_dep(glob_dep)
+                end
+            end
 
             task :get_dep_chain => package_add_non_file_task_dep(global_package_list, pkg.deps, "get_dep_chain", pkg.name) do
                 global_dep_chain.push("#{pkg.name}")

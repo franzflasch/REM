@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 REM_PATH=$1
 
 echo REMPATH $REM_PATH

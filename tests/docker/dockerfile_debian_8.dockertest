@@ -6,7 +6,7 @@ FROM debian:jessie
 WORKDIR /home/rem_build
 
 RUN apt-get update -y
-RUN apt-get install -y rake gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget make python sdcc sdcc-libraries cppcheck
+RUN apt-get install -y rake gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget curl make python sdcc sdcc-libraries cppcheck
 
 # Install mips toolchain manually, as there is no apt-get package available:
 RUN wget https://community.imgtec.com/?do-download=linux-x64-mti-bare-metal-2016-05-03 -O mips_toolchain.tar.gz

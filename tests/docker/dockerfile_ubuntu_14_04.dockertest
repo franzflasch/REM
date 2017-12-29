@@ -13,6 +13,7 @@ RUN apt-get install -y rake gcc-arm-none-eabi gcc-avr avr-libc git subversion un
 # Install mips toolchain manually, as there is no apt-get package available:
 RUN wget https://www.mips.com/?do-download=linux-x86-mti-bare-metal-2016-05-03 -O mips_toolchain.tar.gz
 RUN tar xvf mips_toolchain.tar.gz
+RUN chmod 755 /home/rem_build/mips-mti-elf/2016.05-03/bin /home/rem_build/mips-mti-elf/2016.05-03 /home/rem_build/mips-mti-elf
 ENV PATH /home/rem_build/mips-mti-elf/2016.05-03/bin/:$PATH
 
 RUN git clone https://github.com/franzflasch/REM.git

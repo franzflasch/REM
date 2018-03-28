@@ -25,6 +25,9 @@ require_relative "scripts/misc/print_functions"
 # Global Config
 require_relative "scripts/global_config/global_config"
 
+# At first set the main rakefile base directory
+global_config.set_rakefile_dir(File.dirname(__FILE__))
+
 if(SIMPLECOV == "1")
     require 'simplecov'
     SimpleCov.command_name "rem codecoverage"
@@ -48,9 +51,9 @@ else
 end
 
 # Prepare and Patch tasks:
-require_relative "scripts/download_tasks/DefaultTasks"
-require_relative "scripts/prepare_tasks/DefaultTasks"
-require_relative "scripts/patch_tasks/DefaultTasks"
+require_relative "scripts/download_tasks/download"
+require_relative "scripts/prepare_tasks/prepare"
+require_relative "scripts/patch_tasks/patch"
 
 # Generic
 require_relative "scripts/package"
@@ -76,15 +79,9 @@ namespace :package do
     global_package_list = []
     global_dep_chain = []
 
-    # At first set the main rakefile base directory
-    global_config.set_rakefile_dir(File.dirname(__FILE__))
-
     # Check if a rem_file was already generated
     if File.exist?(global_config.get_remfile())
         temp_pkgs = yaml_parse(global_config.get_remfile())
-        # We need to extend all build functions here, as they're not
-        # restored when loading the yaml file
-        temp_pkgs.each { |pkg| pkg.post_initialize() }
     else
         print_debug("Parsing recipes...")
         rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
@@ -101,7 +98,6 @@ namespace :package do
         end
 
         temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
-        temp_pkgs.each { |pkg| pkg.post_initialize() }
     end
 
     global_package_list = temp_pkgs

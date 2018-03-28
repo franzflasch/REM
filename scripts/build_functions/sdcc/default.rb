@@ -1,6 +1,6 @@
 =begin
 
-    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+    Copyright (C) 2018 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
@@ -18,16 +18,6 @@
     along with REM.  If not, see <http://www.gnu.org/licenses/>.
 =end
 
-module DefaultPatch
-    module Patch
-
-        private
-
-            def do_patch
-                main_working_dir = Rake.original_dir
-                patches.each do |e|
-                    execute "patch -d #{get_pkg_work_dir} -i #{pkg_build_dir}/#{e} -p1 -t"
-                end
-            end
-    end
-end
+require_relative "../gcc/compile"
+require_relative "./link"
+require_relative "./image"

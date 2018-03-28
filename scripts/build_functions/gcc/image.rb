@@ -1,0 +1,34 @@
+=begin
+
+    Copyright (C) 2018 Franz Flasch <franz.flasch@gmx.at>
+
+    This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
+
+    REM is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    REM is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with REM.  If not, see <http://www.gnu.org/licenses/>.
+=end
+
+module Image
+    private
+        def do_make_bin
+            execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O binary #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.bin"
+        end
+
+        def do_make_hex
+            execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O ihex #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.hex"
+        end
+
+        def do_make_srec
+            execute "#{global_config.get_obj_cp} #{global_config.get_obj_copy_flags} -S -O srec #{pkg_deploy_dir}/#{name}.elf #{pkg_deploy_dir}/#{name}.srec"
+        end
+end

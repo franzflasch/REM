@@ -90,14 +90,6 @@ module PackageDescriptor
         # pkg_work_dir: work directory
         attr_reader :pkg_work_dir
 
-        # specific package data - not really used at the moment, but it is intended to
-        # be used for build tasks other than the DefaultTasks - please see below:
-        # At the moment the this class is only extended by default tasks
-        attr_reader :download_specific_data
-        attr_reader :prepare_specific_data
-        attr_reader :patch_specific_data
-        attr_reader :build_specific_data
-
         ### SETTERS ###
 
         # No ARRAY values
@@ -134,10 +126,6 @@ module PackageDescriptor
 
         def set_linker_script(script)
            (@linker_script = []).concat(string_strip_to_array(script))
-        end
-
-        def set_build_specific_data(data)
-            (@build_specific_data = []).concat([data])
         end
 
         # full ARRAY values
@@ -198,10 +186,6 @@ module PackageDescriptor
             return mach[0].strip()
         end
 
-        def get_build_specific_data
-            return build_specific_data[0]
-        end
-
     private
         ### Private set methods
 
@@ -237,8 +221,6 @@ module PackageDescriptor
             @linker_script = set_linker_script("")
 
             @instance_var_to_reset = []
-
-            @build_specific_data = set_build_specific_data(nil)
         end
 
         def set_download_done()
@@ -288,43 +270,44 @@ class SoftwarePackage
             # Make sanity checks here:
             check_duplicates_exit_with_error(deps, "deps in package #{name}")
             check_duplicates_exit_with_error(srcs, "srcs in package #{name}")
+
+            extend DownloadPackage
+            extend PreparePackageBuildDir
+            extend Patch
+            extend Compile
+            extend Link
+            extend Image
         end
 
-        def post_initialize
+        def override_func(name, &block)
+            (class << self; self; end).class_eval do
+            define_method name, &block
+            end
+        end
 
-            case "#{download_specific_data.class.name}"
-                when "NilClass"
-                    extend DefaultDownload::DownloadPackage
-                else
-                    print_abort("Package download_type #{download_specific_data.class.name} not known")
+        def invalidate_build_funcs
+            self.override_func :do_compile_clean do
+                print_abort("not implemented")
             end
 
-            case "#{prepare_specific_data.class.name}"
-                when "NilClass"
-                    extend DefaultPrepare::PreparePackageBuildDir
-                else
-                    print_abort("Package download_type #{prepare_specific_data.class.name} not known")
+            self.override_func :do_compile do
+                print_abort("not implemented")
             end
 
-            case "#{patch_specific_data.class.name}"
-                when "NilClass"
-                    extend DefaultPatch::Patch
-                else
-                    print_abort("Package download_type #{patch_specific_data.class.name} not known")
+            self.override_func :do_link_clean do
+                print_abort("not implemented")
             end
 
-            case "#{build_specific_data[0].class.name}"
-                when "NilClass"
-                    extend Default::Compile
-                    extend Default::Link
-                    extend Default::Image
-                when "MakeTasksDesc"
-                    extend MakePkg::Compile
-                    extend MakePkg::Link
-                    extend MakePkg::Image
-                    print_any_yellow("Using class #{build_specific_data[0].class.name} for package #{name}")
-                else
-                    print_abort("Package build_type #{build_specific_data[0].class.name} not known")
+            self.override_func :do_link do
+                print_abort("not implemented")
+            end
+
+            self.override_func :do_make_bin do
+                print_abort("not implemented")
+            end
+
+            self.override_func :do_make_hex do
+                print_abort("not implemented")
             end
         end
 end

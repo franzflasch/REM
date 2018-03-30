@@ -56,6 +56,8 @@ module PackageDescriptor
         # unique hash of the package
         attr_reader :unique_hash
 
+        # abs path to rem file:
+        attr_reader :recipe_path
         # base_dir: recipe file location
         attr_reader :base_dir
         # pkg_dl_dir: download location
@@ -195,6 +197,7 @@ module PackageDescriptor
             set_unique_hash("nohash")
 
             (@base_dir||= []).push(get_dirname_from_uri(recipe_file))
+            (@recipe_path||= []).push(recipe_file)
         end
 
         def default_setup_settables()
@@ -298,7 +301,7 @@ class SoftwarePackage
                 print_abort("not implemented")
             end
 
-            self.override_func :do_link do
+            self.override_func :do_link do |objs|
                 print_abort("not implemented")
             end
 

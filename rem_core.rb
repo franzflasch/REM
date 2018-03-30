@@ -81,24 +81,25 @@ namespace :package do
 
     # Check if a rem_file was already generated
     if File.exist?(global_config.get_remfile())
-        temp_pkgs = yaml_parse(global_config.get_remfile())
+        rem_recipes = yaml_parse(global_config.get_remfile())
     else
         print_debug("Parsing recipes...")
         rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
-        if rem_recipes == nil
-            print_abort ("No recipes found!")
-        end
-
-        temp_pkgs = prepare_recipes(rem_recipes)
-
-        remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
-        if remappend_recipes != nil
-            temp_pkgs_append = prepare_recipes(remappend_recipes, true)
-            merge_recipes_append(temp_pkgs, temp_pkgs_append)
-        end
-
-        temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
     end
+
+    if rem_recipes == nil
+        print_abort ("No recipes found!")
+    end
+
+    temp_pkgs = prepare_recipes(rem_recipes)
+
+    remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
+    if remappend_recipes != nil
+        temp_pkgs_append = prepare_recipes(remappend_recipes, true)
+        merge_recipes_append(temp_pkgs, temp_pkgs_append)
+    end
+
+    temp_pkgs = filter_packages(temp_pkgs, "#{global_config.arch}", "#{global_config.mach}")
 
     global_package_list = temp_pkgs
 
@@ -192,7 +193,7 @@ namespace :package do
                     dep_ref_array = []
                     dep_chain.each do |dep|
                         dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
-                        dep_ref_array.push(dep_ref)
+                        dep_ref_array.push(dep_ref.recipe_path[0])
                         print_any_green("Writing #{dep_ref.name}")
                     end
                     yaml_store(remfile, "pkg", dep_ref_array)

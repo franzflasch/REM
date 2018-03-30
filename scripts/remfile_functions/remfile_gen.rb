@@ -25,15 +25,10 @@ def yaml_store(file, fieldname, data)
     store = YAML::Store.new(file)
     store.transaction do
         store[fieldname] = data
-        #store["compile_sources"] = { "hello" => "world" }
     end
 end
 
 def yaml_parse(file)
-    pkgs = []
     data = YAML::load_file(file)
-    data['pkg'].each do |d|
-        pkgs.push(d)
-    end
-    return pkgs
+    return data['pkg']
 end

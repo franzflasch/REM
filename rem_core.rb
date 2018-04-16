@@ -81,10 +81,12 @@ namespace :package do
 
     # Check if a rem_file was already generated
     if File.exist?(global_config.get_remfile())
-        rem_recipes = yaml_parse(global_config.get_remfile())
+        rem_recipes = yaml_parse(global_config.get_remfile(), false)
+        remappend_recipes = yaml_parse(global_config.get_remfile(), true)
     else
         print_debug("Parsing recipes...")
         rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
+        remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
     end
 
     if rem_recipes == nil
@@ -93,9 +95,8 @@ namespace :package do
 
     temp_pkgs = prepare_recipes(rem_recipes)
 
-    remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
     if remappend_recipes != nil
-        temp_pkgs_append = prepare_recipes(remappend_recipes, true)
+        temp_pkgs_append = prepare_recipes(remappend_recipes)
         merge_recipes_append(temp_pkgs, temp_pkgs_append)
     end
 
@@ -104,7 +105,7 @@ namespace :package do
     global_package_list = temp_pkgs
 
     # We get a list of all dependencies of the global dependencies
-    # so that we eclude these from adding the global one
+    # so that we exclude these from adding the global one
     # otherwise we would get a lot of circular dependencies
     glob_dep_list_to_exclude = []
     global_config.get_global_deps.each do |glob_dep|
@@ -193,7 +194,7 @@ namespace :package do
                     dep_ref_array = []
                     dep_chain.each do |dep|
                         dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
-                        dep_ref_array.push(dep_ref.recipe_path[0])
+                        dep_ref_array.concat(dep_ref.get_package_recipe_files)
                         print_any_green("Writing #{dep_ref.name}")
                     end
                     yaml_store(remfile, "pkg", dep_ref_array)
@@ -472,7 +473,6 @@ namespace :package do
         global_package_list.each do |pkg|
             print_debug "#{pkg.name}"
             print_debug "\t\t\t#{pkg.version[0]}"
-            print_debug ""
         end
     end
 end

@@ -34,7 +34,7 @@ def get_recipes(project_folders, recipe_file_ending)
     return files
 end
 
-def prepare_recipes(recipes, append=false)
+def prepare_recipes(recipes)
     recipe_filenames = []
     pkgs = []
 
@@ -50,12 +50,7 @@ def prepare_recipes(recipes, append=false)
         print_debug "parsing recipe #{r}:"
 
         # Parse and include submakefiles
-        if(append == true)
-            cur_pkg = SoftwarePackageAppend.new(r)
-        else
-            cur_pkg = SoftwarePackage.new(r)
-        end
-
+        cur_pkg = SoftwarePackage.new(r)
         pkgs.push(cur_pkg)
     end
     return pkgs
@@ -86,17 +81,18 @@ def merge_recipes_append(recipe_list, append_recipe_list)
                 append_pkg.instance_variable_get(:@instance_var_to_reset).clear
             end
 
-            # Now merge the append recipe instance variables with the base recipe
-            append_pkg.instance_variables.each do |var|
-                print_any_yellow("#{var} before appending: #{tmp_pkg.instance_variable_get("#{var}")}")
 
-                # At the moment only array types will get appended
-                if tmp_pkg.instance_variable_get(var).kind_of?(Array)
-                    val_to_append = append_pkg.instance_variable_get(var)
-                    tmp_pkg.instance_variable_get(var).concat(val_to_append)
-                    print_any_yellow("Appending #{var} #{val_to_append} to recipe #{tmp_pkg.name}")
-                    print_any_cyan("#{var} is now #{tmp_pkg.instance_variable_get("#{var}")}")
-                end
+            # OK now simply load the new append package into the base package
+            tmp_pkg.load_package(append_pkg.get_package_recipe_files[0])
+
+            # Add the remappend path
+            tmp_pkg.add_recipe_path(append_pkg.get_package_recipe_files[0])
+
+            # Also add the new base_dir
+            tmp_pkg.add_base_dir(append_pkg.get_package_recipe_files[0])
+
+            tmp_pkg.instance_variables.each do |var|
+                print_any_cyan("#{var} is now #{tmp_pkg.instance_variable_get("#{var}")}")
             end
         end
     end

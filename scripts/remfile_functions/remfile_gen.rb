@@ -28,7 +28,26 @@ def yaml_store(file, fieldname, data)
     end
 end
 
-def yaml_parse(file)
+def yaml_parse(file, append)
     data = YAML::load_file(file)
-    return data['pkg']
+
+    recipes = []
+
+    data['pkg'].each do |pkg|
+        if append == true
+            if pkg.include? ".remappend"
+                (recipes||= []).push(pkg)
+            end
+        else
+            if !pkg.include? ".remappend"
+                (recipes||= []).push(pkg)
+            end
+        end
+    end
+
+    if recipes.empty? 
+        return nil
+    else
+        return recipes
+    end
 end

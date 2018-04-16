@@ -23,14 +23,17 @@ REM_PATH=$1
 
 echo REMPATH $REM_PATH
 export PATH=$REM_PATH:$PATH
-export PATH=$REM_PATH/shell_scripts:$PATH
 
 git clone https://github.com/franzflasch/rem_packages.git
-git clone https://github.com/franzflasch/rem_test_project.git
+git clone https://github.com/franzflasch/rem_recipe_testing.git
 
-rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:link VERBOSE=1 && echo OK || exit 1
-comment_unused_functions_cppcheck.sh rem_workdir/8051_nrf24le1_32/build "rem_workdir/8051_nrf24le1_32/build/nrf24le1_sdk_nohash/" && echo OK || exit 2
+# Test remfile generation
+rem ARCH=avr MACH=atmega168 PROJECT_FOLDER=rem_packages,rem_recipe_testing/avr_append_task_test package:foo_task:remfile_generate -m -j4  VERBOSE=1 && echo OK || exit 1
+
+cat rem_workdir/avr_atmega168/build/pkgs.rem_file | grep rem_recipe_testing/avr_append_task_test/foobar/foo_tasks.rem && echo OK || exit 2
+cat rem_workdir/avr_atmega168/build/pkgs.rem_file | grep rem_recipe_testing/avr_append_task_test/append/foo_task.remappend && echo OK || exit 3
+
 rm -rf rem_workdir
 
 rm -rf rem_packages
-rm -rf rem_test_project
+rm -rf rem_recipe_testing

@@ -57,7 +57,7 @@ module PackageDescriptor
         attr_reader :unique_hash
 
         # abs path to rem file:
-        attr_reader :recipe_path
+        attr_reader :recipe_paths
         # base_dir: recipe file location
         attr_reader :base_dir
         # pkg_dl_dir: download location
@@ -103,7 +103,15 @@ module PackageDescriptor
             @unique_hash = hash
         end
 
-        # ARRAY values - (only the first one is used)
+        # ARRAY values
+        def add_recipe_path(recipe_file)
+            (@recipe_paths||= []).push(recipe_file)
+        end
+
+        def add_base_dir(recipe_file)
+            (@base_dir||= []).push(get_dirname_from_uri(recipe_file))
+        end
+
         def set_uri(uri)
             tmp_str = string_strip(uri).strip
             (@uri = []).concat([PackageUri.new(tmp_str)])
@@ -166,6 +174,10 @@ module PackageDescriptor
 
 
         ### GETTERS ###
+        def get_package_recipe_files
+            return recipe_paths
+        end
+
         def get_package_state_file(which)
             return "#{pkg_state_dir}/#{which}"
         end
@@ -196,8 +208,8 @@ module PackageDescriptor
             set_name(get_filename_without_extension_from_uri(recipe_file))
             set_unique_hash("nohash")
 
-            (@base_dir||= []).push(get_dirname_from_uri(recipe_file))
-            (@recipe_path||= []).push(recipe_file)
+            add_base_dir(recipe_file)
+            add_recipe_path(recipe_file)
         end
 
         def default_setup_settables()
@@ -250,10 +262,7 @@ class SoftwarePackage
         # Extend with various modules here
         include PackageBuildFunctions
 
-        def initialize(recipe_file)
-            default_setup_identifiers(recipe_file)
-            default_setup_settables()
-
+        def load_package(recipe_file)
             # OK, we are done with the default setup, now load the recipe file and setup internals
             sw_package_set(self)
             load "./#{recipe_file}"
@@ -261,6 +270,13 @@ class SoftwarePackage
             # override the above defined function here, this way it is possible
             # to use "sw_package." in the method context also (for e.g if custom build methods are used)
             def sw_package; return self; end
+        end
+
+        def initialize(recipe_file)
+            default_setup_identifiers(recipe_file)
+            default_setup_settables()
+
+            load_package(recipe_file)
 
             @src_files_prepared = []
             @obj_files_prepared = []
@@ -313,17 +329,4 @@ class SoftwarePackage
                 print_abort("not implemented")
             end
         end
-end
-
-class SoftwarePackageAppend
-    include PackageDescriptor
-
-    def initialize(recipe_file)
-            # Only setup the identifiers
-            default_setup_identifiers(recipe_file)
-
-            # OK, we are done with the default setup, now load the recipe file and setup internals
-            sw_package_set(self)
-            load "./#{recipe_file}"
-    end
 end

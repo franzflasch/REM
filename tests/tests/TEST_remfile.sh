@@ -30,7 +30,7 @@ git clone https://github.com/franzflasch/rem_recipe_testing.git
 # Test remfile generation
 rem ARCH=avr MACH=atmega168 PROJECT_FOLDER=rem_packages,rem_recipe_testing/avr_append_task_test package:foo_task:remfile_generate -m -j4  VERBOSE=1 && echo OK || exit 1
 
-cat rem_workdir/avr_atmega168/build/pkgs.rem_file | grep rem_recipe_testing/avr_append_task_test/foobar/foo_tasks.rem && echo OK || exit 2
+cat rem_workdir/avr_atmega168/build/pkgs.rem_file | grep rem_recipe_testing/avr_append_task_test/foobar/foo_task.rem && echo OK || exit 2
 cat rem_workdir/avr_atmega168/build/pkgs.rem_file | grep rem_recipe_testing/avr_append_task_test/append/foo_task.remappend && echo OK || exit 3
 
 rm -rf rem_workdir

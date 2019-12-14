@@ -7,10 +7,10 @@ services:
 
 env:
   matrix:
-    - OS_TYPE=debian OS_VERSION=8
     - OS_TYPE=debian OS_VERSION=9
-    - OS_TYPE=ubuntu OS_VERSION=14_04
+    - OS_TYPE=debian OS_VERSION=10
     - OS_TYPE=ubuntu OS_VERSION=16_04
+    - OS_TYPE=ubuntu OS_VERSION=18_04
 
 script:
   - bash ./tests/run_docker_test.sh ${OS_TYPE} ${OS_VERSION}

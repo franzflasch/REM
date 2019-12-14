@@ -16,8 +16,8 @@ REM is a Yocto like buildsystem primarily intended for microcontrollers. It is b
 
 # Getting started Debian/Ubuntu
 * Minimal requirements
-    - Debian (at least 8 "jessie")
-    - Ubuntu (at least 14.04 "Trusty Tahr")
+    - Debian (at least 9)
+    - Ubuntu (at least 16.04)
 
 ## 1. Install dependencies
 ```Shell

@@ -1,7 +1,7 @@
 #
 # Super simple example of a Dockerfile
 #
-FROM debian:jessie
+FROM debian:buster
 
 WORKDIR /home/rem_build
 

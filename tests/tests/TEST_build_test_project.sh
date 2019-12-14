@@ -26,7 +26,6 @@ export PATH=$REM_PATH:$PATH
 
 git clone https://github.com/franzflasch/rem_packages.git
 git clone https://github.com/franzflasch/rem_test_project.git
-git clone https://github.com/franzflasch/rem_libopenpic32.git
 
 rem ARCH=native MACH=linux PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:link VERBOSE=1 && echo OK || exit 1
 rm -rf rem_workdir
@@ -41,10 +40,6 @@ rm -rf rem_workdir
 rem ARCH=arm MACH=nrf51822 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:image[bin] VERBOSE=1 && echo OK || exit 4
 rm -rf rem_workdir
 rem ARCH=8051 MACH=nrf24le1_32 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:link VERBOSE=1 && echo OK || exit 5
-rm -rf rem_workdir
-rem ARCH=mips MACH=pic32mx2 PROJECT_FOLDER=rem_test_project,rem_libopenpic32,rem_packages package:test_project:image[srec] VERBOSE=1 && echo OK || exit 5
-rm -rf rem_workdir
-rem ARCH=mips MACH=pic32mz2048 PROJECT_FOLDER=rem_test_project,rem_libopenpic32,rem_packages package:test_project:image[srec] VERBOSE=1 && echo OK || exit 5
 rm -rf rem_workdir
 
 rm -rf rem_packages

@@ -29,11 +29,6 @@ module Link
                 tmp_str.concat("#{e} ")
             end
 
-            # Set linker script
-            unless linker_script[0].to_s.strip.empty?
-                tmp_str.concat("-T #{pkg_build_dir}/#{linker_script[0]} ")
-            end
-
             return tmp_str
         end
 

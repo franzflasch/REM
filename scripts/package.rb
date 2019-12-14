@@ -85,7 +85,6 @@ module PackageDescriptor
         attr_reader :mach
         attr_reader :global_defines
         attr_reader :global_linker_flags
-        attr_reader :linker_script
 
         attr_reader :instance_var_to_reset
 
@@ -132,10 +131,6 @@ module PackageDescriptor
 
         def set_version(version)
             (@version = []).concat(string_strip_to_array(version))
-        end
-
-        def set_linker_script(script)
-           (@linker_script = []).concat(string_strip_to_array(script))
         end
 
         # full ARRAY values
@@ -233,7 +228,6 @@ module PackageDescriptor
             @mach = set_mach("generic")
             @global_defines = []
             @global_linker_flags = []
-            @linker_script = set_linker_script("")
 
             @instance_var_to_reset = []
         end

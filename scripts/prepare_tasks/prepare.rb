@@ -24,7 +24,7 @@ module PreparePackageBuildDir
 
         def prepare_copy
             base_dir.each do |dir|
-                FileUtils.cp_r("#{dir}/.", pkg_build_dir, {:remove_destination => true, :verbose => false})
+                FileUtils.cp_r("#{dir}/.", pkg_build_dir, **{:remove_destination => true, :verbose => false})
             end
         end
 

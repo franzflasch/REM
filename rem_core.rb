@@ -59,7 +59,6 @@ require_relative "scripts/patch_tasks/patch"
 require_relative "scripts/package"
 require_relative "scripts/dependency_functions/dependency_tasks"
 require_relative "scripts/dependency_functions/dependency_graph"
-require_relative "scripts/remfile_functions/remfile_gen"
 require_relative "scripts/recipe_handling/recipes"
 
 require "find"
@@ -79,15 +78,9 @@ namespace :package do
     global_package_list = []
     global_dep_chain = []
 
-    # Check if a rem_file was already generated
-    if File.exist?(global_config.get_remfile())
-        rem_recipes = yaml_parse(global_config.get_remfile(), false)
-        remappend_recipes = yaml_parse(global_config.get_remfile(), true)
-    else
-        print_debug("Parsing recipes...")
-        rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
-        remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
-    end
+    print_debug("Parsing recipes...")
+    rem_recipes = get_recipes("#{global_config.get_project_folder()}", "rem")
+    remappend_recipes = get_recipes("#{global_config.get_project_folder()}", "remappend")
 
     if rem_recipes == nil
         print_abort ("No recipes found!")
@@ -184,27 +177,6 @@ namespace :package do
                         print_abort("Invalid argument #{args[:what]}, please specify [md5] or [sha1]")
                 end
                 print_any_green(hash)
-            end
-
-
-
-            def create_remfile_generate_file_task(pkg_ref, package_list, remfile, dep_chain)
-                Rake::Task["package:create_workdir"].invoke()
-                file remfile do
-                    dep_ref_array = []
-                    dep_chain.each do |dep|
-                        dep_ref = pkg_get_ref_by_name(package_list, dep, pkg_ref.name)
-                        dep_ref_array.concat(dep_ref.get_package_recipe_files)
-                        print_any_green("Writing #{dep_ref.name}")
-                    end
-                    yaml_store(remfile, "pkg", dep_ref_array)
-                end
-            end
-
-            desc "remfile_generate"
-            task :remfile_generate => package_add_non_file_task_dep(global_package_list, pkg.get_name_splitted, "get_dep_chain", pkg.name) do
-                create_remfile_generate_file_task(pkg, global_package_list, global_config.get_remfile(), global_dep_chain)
-                Rake::Task["#{global_config.get_remfile()}"].invoke()
             end
 
 
@@ -454,11 +426,6 @@ namespace :package do
     task :create_workdir do
         print_debug("Preparing work directories...")
         create_workdir()
-    end
-
-    task :remfile_clean do
-        print_debug("Deleting #{global_config.get_remfile()}")
-        FileUtils.rm_f(global_config.get_remfile())
     end
 
     task :dirclean do

@@ -21,7 +21,7 @@ REM is a Yocto like buildsystem primarily intended for microcontrollers. It is b
 
 ## 1. Install dependencies
 ```Shell
-sudo apt-get install rubygems gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget curl make python sdcc sdcc-libraries cppcheck
+sudo apt install rubygems gcc-arm-none-eabi gcc-avr avr-libc git subversion unzip wget curl make python3 sdcc sdcc-libraries cppcheck
 ```
 
 ## 2. Install REM buildsystem
@@ -95,17 +95,6 @@ rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER=package package:list_packages
 ## Get a list of dependencies for a particular package:
 ```Shell
 rem ARCH="avr" MACH="atmega168" PROJECT_FOLDER=package package:msglib_test:depends_chain_print
-```
-
-## Generating a "remfile"
-It is also possible to generate a package specific "remfile", in which all infos about the package and its dependencies are stored. This should increase the speed of the whole build process, as it is not needed to reparse all recipes when starting a new build.
-```Shell
-rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER=package,test_project package:test_project:remfile_generate
-```
-
-## Clean remfile
-```Shell
-rem ARCH="arm" MACH="stm32f3" VERBOSE=1 WORKDIR=../../../../Desktop/rem_workdir PROJECT_FOLDER=package,test_project package:remfile_clean
 ```
 
 ## simplecov code coverage - check the codecoverage of the rem buildsystem itself

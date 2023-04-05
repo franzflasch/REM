@@ -37,8 +37,6 @@ class GlobalConfig
     attr_reader :download_dir
     attr_reader :download_state_dir
 
-    attr_reader :remfile
-
     attr_reader :prefix
     attr_reader :compiler_dir
     attr_reader :compiler
@@ -65,8 +63,6 @@ class GlobalConfig
 
         @download_dir = DL_DIR
         @download_state_dir = DL_STATE_DIR
-
-        @remfile = "#{BUILD_DIR}/pkgs.rem_file"
 
         @prefix = ""
         @compiler_dir = ""
@@ -118,10 +114,6 @@ class GlobalConfig
 
     def get_dl_state_dir
         return download_state_dir
-    end
-
-    def get_remfile
-        return remfile
     end
 
     def get_compiler_prefix()

@@ -77,6 +77,13 @@ After the successful build you can flash the image with the right tool for your 
 
 # Further Build examples:
 
+# Using CLANG instead of GCC
+Be aware that certain recipes need to be patched to make it work with clang
+### STMicroelectronics STM32F3
+```Shell
+rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:image[bin] USE_CLANG=1
+```
+
 ## Verbose output:
 ```Shell
 rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER=package,test_project -m -j4 package:test_project:image[bin] VERBOSE=1

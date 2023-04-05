@@ -36,6 +36,6 @@ module Link
             print_debug "hey I am the Default link function"
             print_debug "Objects to link: #{objs}"
             objs_string = objs.join(" ")
-            execute "#{global_config.get_compiler} #{objs_string} #{global_config.get_link_flags} -Wl,-Map=#{pkg_deploy_dir}/#{name}.map -o #{pkg_deploy_dir}/#{name}.elf"
+            execute "#{global_config.get_c_compiler} #{objs_string} #{global_config.get_link_flags} -Wl,-Map=#{pkg_deploy_dir}/#{name}.map -o #{pkg_deploy_dir}/#{name}.elf"
         end
 end

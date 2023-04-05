@@ -39,10 +39,10 @@ class GlobalConfig
 
     attr_reader :prefix
     attr_reader :compiler_dir
-    attr_reader :compiler
+    attr_reader :c_compiler
     attr_reader :obj_cp
     attr_reader :defines
-    attr_reader :compile_flags
+    attr_reader :c_flags
     attr_reader :link_flags
     attr_reader :compiler_obj_extension
     attr_reader :obj_copy_flags
@@ -66,10 +66,10 @@ class GlobalConfig
 
         @prefix = ""
         @compiler_dir = ""
-        @compiler = ""
+        @c_compiler = ""
         @obj_cp = ""
         @defines = []
-        @compile_flags = []
+        @c_flags = []
         @link_flags = []
         @compiler_obj_extension = "o"
         @obj_copy_flags = []
@@ -120,8 +120,8 @@ class GlobalConfig
         return prefix
     end
 
-    def get_compiler
-        return "#{compiler_dir}#{prefix}#{compiler}"
+    def get_c_compiler
+        return "#{compiler_dir}#{prefix}#{c_compiler}"
     end
 
     def get_obj_cp
@@ -136,13 +136,13 @@ class GlobalConfig
         return defines_string
     end
 
-    def get_compile_flags
-        compile_flags_combined = ""
-        compile_flags.each do |e|
-            compile_flags_combined << "#{e} "
+    def get_c_flags
+        c_flags_combined = ""
+        c_flags.each do |e|
+            c_flags_combined << "#{e} "
         end
 
-        return compile_flags_combined
+        return c_flags_combined
     end
 
     def get_link_flags
@@ -188,8 +188,8 @@ class GlobalConfig
         @compiler_dir = dir
     end
 
-    def set_compiler(compiler)
-        @compiler = compiler
+    def set_c_compiler(c_compiler)
+        @c_compiler = c_compiler
     end
 
     def set_obj_cp(obj_cp)
@@ -200,8 +200,8 @@ class GlobalConfig
         @defines.push(define)
     end
 
-    def set_compile_flag(flags)
-        @compile_flags.push(flags)
+    def set_c_flag(flags)
+        @c_flags.push(flags)
     end
 
     def set_link_flag(flags)

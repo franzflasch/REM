@@ -37,7 +37,7 @@ module Compile
             defines_string << "#{global_config.get_defines()}"
 
             src_files_prepared.each_with_index  do |src, obj|
-                execute "#{global_config.get_compiler} #{defines_string} #{global_config.get_compile_flags} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
+                execute "#{global_config.get_c_compiler} #{defines_string} #{global_config.get_c_flags} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
             end
         end
 end

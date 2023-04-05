@@ -36,6 +36,6 @@ module Link
             print_debug "hey I am the Default link function"
             print_debug "Objects to link: #{objs}"
             objs_string = objs.join(" ")
-            execute "#{global_config.get_compiler} #{global_config.get_link_flags()} #{objs_string} -o #{pkg_deploy_dir}/#{name}.ihx"
+            execute "#{global_config.get_c_compiler} #{global_config.get_link_flags()} #{objs_string} -o #{pkg_deploy_dir}/#{name}.ihx"
         end
 end

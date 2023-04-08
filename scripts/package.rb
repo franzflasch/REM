@@ -86,6 +86,10 @@ module PackageDescriptor
         attr_reader :global_defines
         attr_reader :global_linker_flags
 
+        # For all packages that want to prepare src files locally, but don't want to
+        # use the default linking of objects in the end
+        attr_reader :use_default_obj_linking
+
         attr_reader :instance_var_to_reset
 
         # pkg_work_dir: work directory
@@ -229,6 +233,8 @@ module PackageDescriptor
             @global_defines = []
             @global_linker_flags = []
 
+            @use_default_obj_linking = true;
+
             @instance_var_to_reset = []
         end
 
@@ -299,6 +305,10 @@ class SoftwarePackage
         end
 
         def invalidate_build_funcs
+            # Don't use default linking of objects for
+            # recipes which override build funcs
+            @use_default_obj_linking = false
+
             self.override_func :do_compile_clean do
                 print_abort("not implemented")
             end

@@ -54,7 +54,9 @@ module PackageBuildFunctions
         def compile_and_link_prepare
             if src_files_prepared.empty?
                 @src_files_prepared = srcs.map { |e| "#{get_pkg_work_dir}/#{e}" }
-                @obj_files_prepared = srcs.map { |e| "#{get_pkg_work_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}" }
+                if @use_default_obj_linking == true
+                    @obj_files_prepared = srcs.map { |e| "#{get_pkg_work_dir}/#{get_uri_without_extension(e)}.#{global_config.get_obj_extension}" }
+                end
             end
         end
 

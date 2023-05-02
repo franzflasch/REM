@@ -1,6 +1,4 @@
-![icon](https://github.com/franzflasch/REM/blob/master/rem.png?raw=true)
-
-[![Test Status](https://travis-ci.org/franzflasch/REM.svg?branch=master)](https://travis-ci.org/franzflasch/REM)
+![icon](https://github.com/franzflasch/REM/blob/main/rem.png?raw=true)
 
 # REM
 REM is a Yocto like buildsystem primarily intended for microcontrollers. It is based on ruby rake and therefore offers a highly flexible way of setting up projects for microcontrollers. If you know Yocto it should be easy to also learn the REM buildsystem. It consists of some features of Yocto, like recipe appending, inbuild patching and downloading software packages. Projects can be setup by only defining recipes, which describe how a specific component should be built. You can even setup your project with sources completely hosted by github! Not necessary to copy-paste software packages and libraries!
@@ -78,7 +76,11 @@ After the successful build you can flash the image with the right tool for your 
 # Further Build examples:
 
 # Using CLANG instead of GCC
-Be aware that certain recipes need to be patched to make it work with clang
+```
+sudo apt install clang llvm lld
+```
+Be aware that certain recipes need to be patched to make it work with clang.
+The build-system now assumes that there is a arm-none-eabi compiler located at /opt/local/cross-tool-cortex-m4-gcc12/
 ### STMicroelectronics STM32F3
 ```Shell
 rem ARCH=arm MACH=stm32f3 PROJECT_FOLDER=rem_packages,rem_test_project -m -j4 package:test_project:image[bin] USE_CLANG=1

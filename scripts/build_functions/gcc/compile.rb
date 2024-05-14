@@ -36,8 +36,10 @@ module Compile
             defines_string = defs.map { |element| "-D#{element} " }.join("")
             defines_string << "#{global_config.get_defines()}"
 
+            local_c_flags_string = local_c_flags.join(' ')
+
             src_files_prepared.each_with_index  do |src, obj|
-                execute "#{global_config.get_c_compiler} #{defines_string} #{global_config.get_c_flags} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
+                execute "#{global_config.get_c_compiler} #{defines_string} #{global_config.get_c_flags} #{local_c_flags_string} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
             end
         end
 end

@@ -78,6 +78,7 @@ module PackageDescriptor
         attr_reader :patches
         attr_reader :deps
         attr_reader :defs
+        attr_reader :local_c_flags
 
         attr_reader :uri
 
@@ -157,6 +158,10 @@ module PackageDescriptor
         def set_def(define)
             (@defs ||= []).concat(string_strip_to_array(define))
         end
+    
+        def set_local_c_flag(c_flag)
+            (@local_c_flags ||= []).concat(string_strip_to_array(c_flag))
+        end
 
         def set_global_define(define)
             (@global_defines ||= []).concat(string_strip_to_array(define))
@@ -225,6 +230,7 @@ module PackageDescriptor
             @patches = []
             @deps = []
             @defs = []
+            @local_c_flags = []
 
             @uri = [PackageUri.new("package.local")]
 

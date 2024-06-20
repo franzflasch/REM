@@ -19,7 +19,7 @@ REM is a Yocto like buildsystem primarily intended for microcontrollers. It is b
 
 ## 1. Install dependencies
 ```Shell
-sudo apt install rubygems gcc-arm-none-eabi clang gcc-avr avr-libc git subversion unzip wget curl make python3 sdcc sdcc-libraries cppcheck
+sudo apt install rubygems patchutils gcc-arm-none-eabi clang gcc-avr avr-libc git subversion unzip wget curl make python3 sdcc sdcc-libraries cppcheck
 ```
 
 ## 2. Install REM buildsystem

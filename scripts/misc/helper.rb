@@ -1,6 +1,6 @@
 =begin
 
-    Copyright (C) 2015 Franz Flasch <franz.flasch@gmx.at>
+    Copyright (C) 2024 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
@@ -79,6 +79,19 @@ def execute(cmd)
     end
 end
 
+def execute_check_return(cmd)
+    Open3.popen2e(cmd) do |stdin, stdout_err, wait_thr|
+        cmd_std_message = ""
+        print_debug(cmd)
+        stdout_err.each do |line|
+            print_debug(line)
+            cmd_std_message << line
+        end
+        exit_status = wait_thr.value
+        return exit_status.success?
+    end
+end
+
 ### Removes leading and trailing spaces as well as removing superflous
 ### spaces between strings
 def string_strip(val)
@@ -119,4 +132,9 @@ def get_extension_from_uri(uri)
     # return the "."
     tmp.slice!(0)
     return tmp
+end
+
+def git_commit_files(commit_message)
+    execute "GIT_COMMITTER_NAME=\"REM builder\" GIT_COMMITTER_EMAIL=\"rem.builder@rem.com\" \
+             git -C #{get_pkg_work_dir} commit --author=\"REM builder <rem.builder@rem.com>\" -m \"REM: #{commit_message}\""
 end

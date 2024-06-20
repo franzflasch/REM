@@ -1,6 +1,6 @@
 =begin
 
-    Copyright (C) 2018 Franz Flasch <franz.flasch@gmx.at>
+    Copyright (C) 2024 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
@@ -56,6 +56,7 @@ module PreparePackageBuildDir
         end
 
         def do_prepare_builddir
+            is_git_package = false
             case uri[0].uri_type
                 when "local"
                     print_debug "LOCAL package"
@@ -68,6 +69,7 @@ module PreparePackageBuildDir
                 when "git"
                     print_debug "GIT repo"
                     prepare_clone_git()
+                    is_git_package = true
                 when "svn"
                     print_debug "SVN repo"
                     prepare_checkout_svn()
@@ -76,5 +78,18 @@ module PreparePackageBuildDir
             end
             # files need to be copied in every case:
             prepare_copy()
+
+            # Make a local git repo of all the downloaded packages
+            if !is_git_package
+                # theoretically it could still be a git repo 
+                # (downloaded as zip or it is just a local package with a git history)
+                # in case we get an error when calling git status we will create a new git repo from scratch
+                ret_success = execute_check_return "git -C #{get_pkg_work_dir} status"
+                if !ret_success
+                    execute "git -C #{get_pkg_work_dir} init -b main ."
+                    execute "git -C #{get_pkg_work_dir} add ."
+                    git_commit_files("Initial commit")
+                end
+            end
         end
 end

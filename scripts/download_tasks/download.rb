@@ -1,6 +1,6 @@
 =begin
 
-    Copyright (C) 2018 Franz Flasch <franz.flasch@gmx.at>
+    Copyright (C) 2024 Franz Flasch <franz.flasch@gmx.at>
 
     This file is part of REM - Rake for EMbedded Systems and Microcontrollers.
 
@@ -25,7 +25,7 @@ module DownloadPackage
         def download_compressed_file
             #execute "wget -c #{uri[0].uri} -P #{pkg_dl_dir}"
             FileUtils.mkdir_p("#{pkg_dl_dir}")
-            execute "curl -o #{pkg_dl_dir}/#{get_filename_from_uri(uri[0].uri)} -LOk #{uri[0].uri}"
+            execute "curl -o #{pkg_dl_dir}/#{get_filename_from_uri(uri[0].uri)} -Lk #{uri[0].uri}"
         end
 
         def do_download_clean

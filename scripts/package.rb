@@ -79,6 +79,7 @@ module PackageDescriptor
         attr_reader :deps
         attr_reader :defs
         attr_reader :local_c_flags
+        attr_reader :local_cpp_flags
 
         attr_reader :uri
 
@@ -163,6 +164,10 @@ module PackageDescriptor
             (@local_c_flags ||= []).concat(string_strip_to_array(c_flag))
         end
 
+        def set_local_cpp_flag(cpp_flag)
+            (@local_cpp_flags ||= []).concat(string_strip_to_array(cpp_flag))
+        end
+
         def set_global_define(define)
             (@global_defines ||= []).concat(string_strip_to_array(define))
         end
@@ -231,6 +236,7 @@ module PackageDescriptor
             @deps = []
             @defs = []
             @local_c_flags = []
+            @local_cpp_flags = []
 
             @uri = [PackageUri.new("package.local")]
 

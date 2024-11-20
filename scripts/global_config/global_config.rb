@@ -40,9 +40,11 @@ class GlobalConfig
     attr_reader :prefix
     attr_reader :compiler_dir
     attr_reader :c_compiler
+    attr_reader :cpp_compiler
     attr_reader :obj_cp
     attr_reader :defines
     attr_reader :c_flags
+    attr_reader :cpp_flags
     attr_reader :link_flags
     attr_reader :compiler_obj_extension
     attr_reader :obj_copy_flags
@@ -67,9 +69,11 @@ class GlobalConfig
         @prefix = ""
         @compiler_dir = ""
         @c_compiler = ""
+        @cpp_compiler = ""
         @obj_cp = ""
         @defines = []
         @c_flags = []
+        @cpp_flags = []
         @link_flags = []
         @compiler_obj_extension = "o"
         @obj_copy_flags = []
@@ -124,6 +128,10 @@ class GlobalConfig
         return "#{compiler_dir}#{prefix}#{c_compiler}"
     end
 
+    def get_cpp_compiler
+        return "#{compiler_dir}#{prefix}#{cpp_compiler}"
+    end
+
     def get_obj_cp
         return "#{prefix}#{obj_cp}"
     end
@@ -143,6 +151,15 @@ class GlobalConfig
         end
 
         return c_flags_combined
+    end
+
+    def get_cpp_flags
+        cpp_flags_combined = ""
+        cpp_flags.each do |e|
+            cpp_flags_combined << "#{e} "
+        end
+
+        return cpp_flags_combined
     end
 
     def get_link_flags
@@ -192,6 +209,10 @@ class GlobalConfig
         @c_compiler = c_compiler
     end
 
+    def set_cpp_compiler(cpp_compiler)
+        @cpp_compiler = cpp_compiler
+    end
+
     def set_obj_cp(obj_cp)
         @obj_cp = obj_cp
     end
@@ -202,6 +223,10 @@ class GlobalConfig
 
     def set_c_flag(flags)
         @c_flags.push(flags)
+    end
+
+    def set_cpp_flag(flags)
+        @cpp_flags.push(flags)
     end
 
     def set_link_flag(flags)

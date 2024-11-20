@@ -36,10 +36,25 @@ module Compile
             defines_string = defs.map { |element| "-D#{element} " }.join("")
             defines_string << "#{global_config.get_defines()}"
 
-            local_c_flags_string = local_c_flags.join(' ')
+            src_files_prepared.each_with_index do |src, index|
+                extension = File.extname(src)
+                obj = obj_files_prepared[index]
 
-            src_files_prepared.each_with_index  do |src, obj|
-                execute "#{global_config.get_c_compiler} #{defines_string} #{global_config.get_c_flags} #{local_c_flags_string} #{inc_dirs_string} -c #{src} -o #{obj_files_prepared[obj]}"
+                case extension
+                when '.c'
+                    compiler = global_config.get_c_compiler
+                    compiler_flags = global_config.get_c_flags
+                    local_flags_string = local_c_flags.join(' ')
+                when '.cpp', '.cc', '.cxx'
+                    compiler = global_config.get_cpp_compiler
+                    compiler_flags = global_config.get_cpp_flags
+                    local_flags_string = local_cpp_flags.join(' ')
+                else
+                    print_debug "Unknown source file extension for #{src}, skipping."
+                    next
+                end
+
+                execute "#{compiler} #{defines_string} #{compiler_flags} #{local_flags_string} #{inc_dirs_string} -c #{src} -o #{obj}"
             end
         end
 end
